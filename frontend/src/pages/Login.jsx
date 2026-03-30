@@ -1,19 +1,29 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, Zap } from 'lucide-react';
+import API from '../services/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
     try {
-      // Mock login navigation
+      const res = await API.post('/auth/login', { email, password });
+      const { token, ...userData } = res.data;
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(userData));
       navigate('/dashboard');
     } catch (err) {
-      console.error(err);
+      setError(err.response?.data?.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -33,6 +43,12 @@ const Login = () => {
           Welcome Back
         </h2>
         <p className="text-slate-400 text-center mb-8 font-light text-sm">Manage utility bills intelligently.</p>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="relative group">
@@ -65,14 +81,18 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full py-4 mt-6 bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 rounded-2xl text-white font-semibold flex items-center justify-center gap-2 transform transition-all hover:-translate-y-0.5 shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_25px_rgba(79,70,229,0.5)] active:translate-y-0"
+            disabled={loading}
+            className="w-full py-4 mt-6 bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 rounded-2xl text-white font-semibold flex items-center justify-center gap-2 transform transition-all hover:-translate-y-0.5 shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_25px_rgba(79,70,229,0.5)] active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sign In <ArrowRight size={18} strokeWidth={2.5} />
+            {loading ? 'Signing in...' : (<>Sign In <ArrowRight size={18} strokeWidth={2.5} /></>)}
           </button>
         </form>
 
         <p className="mt-8 text-center text-sm text-slate-400">
-          New to the platform? <Link to="/register" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors ml-1">Create an account</Link>
+          New to the platform?{' '}
+          <Link to="/register" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors ml-1">
+            Create an account
+          </Link>
         </p>
       </div>
     </div>

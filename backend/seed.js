@@ -5,7 +5,7 @@ const seedData = async () => {
     console.log('Seeding database...');
     try {
         await db.query('BEGIN');
-        
+
         // Users
         const salt = await bcrypt.genSalt(10);
         const hash = await bcrypt.hash('password123', salt);
@@ -14,7 +14,7 @@ const seedData = async () => {
             [hash]
         );
         const userId = userRes.rows[0].id;
-        
+
         // Household
         const hhRes = await db.query(
             "INSERT INTO Households (name, created_by) VALUES ('Racheal Residence', $1) RETURNING id",
@@ -33,13 +33,13 @@ const seedData = async () => {
             [hhId]
         );
         const billId = billRes.rows[0].id;
-        
+
         // Share
         const shareRes = await db.query(
             "INSERT INTO ExpenseShares (bill_id, split_type) VALUES ($1, 'equal') RETURNING id",
             [billId]
         );
-        
+
         await db.query(
             "INSERT INTO ShareLines (expense_share_id, user_id, amount, status) VALUES ($1, $2, 1500.00, 'unpaid')",
             [shareRes.rows[0].id, userId]

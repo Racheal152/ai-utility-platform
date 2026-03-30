@@ -3,6 +3,7 @@ import { Home, FileText, Users, Settings as SettingsIcon, LogOut, Zap, Save, Loa
 import { Link, useNavigate } from 'react-router-dom';
 import { updateProfile } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
+import MobileNav from '../components/MobileNav';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -92,7 +93,7 @@ const Settings = () => {
           <NotificationBell />
         </header>
 
-        <div className="flex-1 overflow-auto p-8 max-w-3xl mx-auto w-full">
+        <div className="flex-1 overflow-auto p-4 pb-24 md:p-8 max-w-3xl mx-auto w-full">
           {msg.text && (
             <div className={`mb-6 p-4 rounded-2xl flex items-center gap-3 text-sm border ${msg.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
               {msg.type === 'error' ? <AlertCircle size={18} /> : <CheckCircle size={18} />}
@@ -159,6 +160,7 @@ const Settings = () => {
           </div>
         </div>
       </main>
+      <MobileNav />
     </div>
   );
 };

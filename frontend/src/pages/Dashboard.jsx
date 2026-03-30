@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
 import { ensureHousehold, fetchBills, addBill, fetchPredictions } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
+import MobileNav from '../components/MobileNav';
 
 // ─── helpers ──────────────────────────────────────────────────
 const fmtKES = (n) => `KES ${Number(n || 0).toLocaleString('en-KE', { minimumFractionDigits: 0 })}`;
@@ -219,7 +220,7 @@ const Dashboard = () => {
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto p-8">
+        <div className="flex-1 overflow-auto p-4 pb-24 md:p-8">
           {error && (
             <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-3">
               <AlertCircle size={18} /> {error}
@@ -366,6 +367,7 @@ const Dashboard = () => {
           onSaved={loadData}
         />
       )}
+      <MobileNav />
     </div>
   );
 };

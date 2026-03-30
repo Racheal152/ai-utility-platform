@@ -10,6 +10,7 @@ import {
   deleteBill, uploadProof, approveProof
 } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
+import MobileNav from '../components/MobileNav';
 
 // ─── Utility helpers ───────────────────────────────────────────
 const fmtKES = (n) => `KES ${Number(n).toLocaleString('en-KE', { minimumFractionDigits: 2 })}`;
@@ -461,25 +462,25 @@ const BillTracking = () => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="h-16 flex items-center justify-between px-8 bg-white border-b border-slate-200 sticky top-0 z-10">
+        <header className="py-4 md:h-16 flex flex-wrap md:flex-nowrap items-center justify-between px-4 md:px-8 bg-white border-b border-slate-200 sticky top-0 z-10 gap-4">
           <div>
-            <h1 className="text-xl font-semibold text-slate-800">Bill Tracking &amp; Expense Shares</h1>
+            <h1 className="text-xl font-semibold text-slate-800">Bill Tracking & Splits</h1>
             {household && (
               <p className="text-xs text-slate-400 -mt-0.5">{household.name}</p>
             )}
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4 w-full md:w-auto justify-end">
             <NotificationBell />
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-[0_0_15px_rgba(79,70,229,0.3)] hover:shadow-[0_0_20px_rgba(79,70,229,0.5)] transition-all flex items-center gap-2"
+              className="flex-1 md:flex-none justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-[0_0_15px_rgba(79,70,229,0.3)] hover:shadow-[0_0_20px_rgba(79,70,229,0.5)] transition-all flex items-center gap-2 text-sm"
             >
-              <Plus size={18} /> New Bill Entry
+              <Plus size={18} /> New Bill
             </button>
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto p-8">
+        <div className="flex-1 overflow-auto p-4 pb-24 md:p-8">
           {error && (
             <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-3">
               <AlertCircle size={18} /> {error}
@@ -541,9 +542,10 @@ const BillTracking = () => {
             </div>
 
             {/* Table */}
-            <table className="w-full text-left text-sm text-slate-600">
-              <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
-                <tr>
+            <div className="w-full overflow-x-auto">
+              <table className="w-full text-left text-sm text-slate-600 whitespace-nowrap">
+                <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
+                  <tr>
                   <th className="px-6 py-4">Utility Type</th>
                   <th className="px-6 py-4">Period</th>
                   <th className="px-6 py-4">Total Amount</th>
@@ -582,6 +584,7 @@ const BillTracking = () => {
             </table>
           </div>
         </div>
+        </div>
       </main>
 
       {/* Modals */}
@@ -607,6 +610,7 @@ const BillTracking = () => {
           onApproved={loadData}
         />
       )}
+      <MobileNav />
     </div>
   );
 };

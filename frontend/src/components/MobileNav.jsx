@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, FileText, Users, Settings } from 'lucide-react';
+import { Home, FileText, Users, Settings, LogOut } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const MobileNav = () => {
@@ -24,12 +24,12 @@ const MobileNav = () => {
             key={l.to}
             to={l.to}
             className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-all ${
-              isActive ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-700'
+              isActive ? 'text-violet-600' : 'text-slate-500 hover:text-slate-700'
             }`}
           >
-            <div className={`p-1 rounded-full transition-colors ${isActive ? 'bg-indigo-50' : ''}`}>
+            <div className={`p-1 rounded-full transition-colors ${isActive ? 'bg-violet-50' : ''}`}>
                {React.cloneElement(l.icon, { 
-                  className: `${isActive ? 'fill-indigo-100' : ''}`,
+                  className: `${isActive ? 'fill-violet-100' : ''}`,
                   strokeWidth: isActive ? 2.5 : 2
                })}
             </div>
@@ -37,6 +37,19 @@ const MobileNav = () => {
           </Link>
         )
       })}
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          localStorage.clear();
+          window.location.href = '/login';
+        }}
+        className="flex flex-col items-center justify-center w-full h-full gap-1 transition-all text-red-500 hover:text-red-600"
+      >
+        <div className="p-1 rounded-full transition-colors">
+          <LogOut size={20} strokeWidth={2} />
+        </div>
+        <span className="text-[10px] font-medium">Log out</span>
+      </button>
     </nav>
   );
 };

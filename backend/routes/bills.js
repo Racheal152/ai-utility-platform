@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { addBill, getBills, updateBillStatus, deleteBill, getPredictions } = require('../controllers/billController');
-const { uploadProof, approveProof } = require('../controllers/paymentController');
+const { addBill, getBills, updateBillStatus, deleteBill, getPredictions, getAiInsights } = require('../controllers/billController');
+const { uploadProof, approveProof, rejectProof } = require('../controllers/paymentController');
 const { protect } = require('../middleware/authMiddleware');
 const multer = require('multer');
 const path = require('path');
@@ -33,11 +33,13 @@ const upload = multer({
 
 router.post('/', protect, addBill);
 router.get('/household/:householdId', protect, getBills);
+router.get('/household/:householdId/insights', protect, getAiInsights);
 router.get('/household/:householdId/predictions', protect, getPredictions);
 router.patch('/:id/status', protect, updateBillStatus);
 router.delete('/:id', protect, deleteBill);
 router.post('/upload-proof', protect, upload.single('receipt'), uploadProof);
 router.patch('/proofs/:proofId/approve', protect, approveProof);
+router.patch('/proofs/:proofId/reject', protect, rejectProof);
 
 // Multer error handler
 router.use((err, req, res, next) => {

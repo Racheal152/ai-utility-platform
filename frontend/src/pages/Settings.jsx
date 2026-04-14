@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, FileText, Users, Settings as SettingsIcon, LogOut, Zap, Save, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Home, FileText, Users, Settings as SettingsIcon, LogOut, Sparkles, Save, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { updateProfile } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
@@ -50,9 +50,12 @@ const Settings = () => {
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col">
         <div className="h-16 flex items-center px-6 border-b border-slate-100">
-          <div className="flex items-center gap-2 text-indigo-600">
-            <Zap size={24} className="fill-indigo-600" />
-            <span className="text-xl font-bold tracking-tight text-slate-900">AI Utility</span>
+          <div className="flex items-center gap-2 text-violet-600 font-poppins">
+            <Sparkles size={24} className="text-violet-500 fill-violet-500" />
+            <span className="text-xl tracking-tight">
+              <span className="font-extrabold text-violet-900">Aiva</span>
+              <span className="font-medium text-violet-500">Pay</span>
+            </span>
           </div>
         </div>
         <nav className="flex-1 px-4 py-6 space-y-1 text-slate-600 font-medium">
@@ -65,13 +68,13 @@ const Settings = () => {
           <Link to="/household" className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-colors">
             <Users size={20} /> Household
           </Link>
-          <Link to="/settings" className="flex items-center gap-3 px-3 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl transition-colors">
+          <Link to="/settings" className="flex items-center gap-3 px-3 py-2.5 bg-violet-50 text-violet-700 rounded-xl transition-colors">
             <SettingsIcon size={20} /> Settings
           </Link>
         </nav>
         <div className="p-4 border-t border-slate-100 space-y-2">
           <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">
+            <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-700 font-bold text-sm">
               {initials(user.name)}
             </div>
             <div className="min-w-0">
@@ -87,13 +90,17 @@ const Settings = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="h-16 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-slate-200/50 sticky top-0 z-10">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
+        {/* Soft luxury glow background elements */}
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[40rem] h-[40rem] bg-pink-300/10 rounded-full blur-[120px] pointer-events-none -z-10 animate-pulse"></div>
+        <div className="absolute bottom-20 right-0 w-[30rem] h-[30rem] bg-violet-300/20 rounded-full blur-[120px] pointer-events-none -z-10 animate-pulse delay-1000"></div>
+
+        <header className="py-4 md:h-16 flex flex-wrap md:flex-nowrap items-center justify-between px-4 md:px-8 bg-white/80 backdrop-blur-md border-b border-slate-200/50 sticky top-0 z-20 gap-4">
           <h1 className="text-xl font-semibold text-slate-800">Account Settings</h1>
-          <NotificationBell />
+          <NotificationBell className="ml-auto" />
         </header>
 
-        <div className="flex-1 overflow-auto p-4 pb-24 md:p-8 max-w-3xl mx-auto w-full">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 pb-24 md:p-8 max-w-3xl mx-auto w-full">
           {msg.text && (
             <div className={`mb-6 p-4 rounded-2xl flex items-center gap-3 text-sm border ${msg.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
               {msg.type === 'error' ? <AlertCircle size={18} /> : <CheckCircle size={18} />}
@@ -103,7 +110,7 @@ const Settings = () => {
 
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-400 flex items-center justify-center text-white font-bold text-3xl shadow-lg">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center text-white font-bold text-3xl shadow-lg">
                 {initials(user.name)}
               </div>
               <div>
@@ -131,7 +138,7 @@ const Settings = () => {
                   value={name} 
                   onChange={e => setName(e.target.value)}
                   required
-                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white transition-colors" 
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:bg-white focus:scale-[1.01] transition-all" 
                 />
               </div>
 
@@ -142,7 +149,7 @@ const Settings = () => {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="Leave blank to keep current password"
-                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white transition-colors" 
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:bg-white focus:scale-[1.01] transition-all" 
                 />
               </div>
 
@@ -150,7 +157,7 @@ const Settings = () => {
                 <button 
                   type="submit" 
                   disabled={saving}
-                  className="py-3 px-6 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-indigo-200"
+                  className="py-3 px-6 bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 disabled:opacity-50 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 shadow-[0_4px_14px_rgba(139,92,246,0.3)]"
                 >
                   {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                   Save Changes

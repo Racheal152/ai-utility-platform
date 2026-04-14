@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  FileText, Plus, Search, Filter, Home, Users, Settings, Zap,
+  FileText, Plus, Search, Filter, Home, Users, Settings, Sparkles, Zap,
   X, Upload, Eye, Trash2, CheckCircle, AlertCircle, Clock,
-  ChevronDown, Loader2, ReceiptText
+  ChevronDown, Loader2, ReceiptText, LogOut
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   ensureHousehold, fetchBills, addBill, updateBillStatus,
-  deleteBill, uploadProof, approveProof
+  deleteBill, uploadProof, approveProof, rejectProof
 } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
 import MobileNav from '../components/MobileNav';
+import AddBillModal from '../components/AddBillModal';
 
 // ─── Utility helpers ───────────────────────────────────────────
 const fmtKES = (n) => `KES ${Number(n).toLocaleString('en-KE', { minimumFractionDigits: 2 })}`;
@@ -26,7 +27,7 @@ const StatusBadge = ({ status }) => {
     partially_paid: 'bg-blue-100 text-blue-700',
   };
   return (
-    <span className={`px-2.5 py-1 rounded-md text-xs font-bold capitalize ${map[status] ?? 'bg-slate-100 text-slate-600'}`}>
+    <span className={`px-2.5 py-1 rounded-full text-xs font-bold capitalize ${map[status] ?? 'bg-slate-100 text-slate-600'}`}>
       {status?.replace('_', ' ')}
     </span>
   );
@@ -36,8 +37,8 @@ const VerificationBadge = ({ verification, ocrData }) => {
   const isAuto = ocrData?.autoApproved;
   const map = {
     verified: {
-      cls: isAuto ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-blue-50 text-blue-600',
-      icon: isAuto ? <Zap size={12} className="fill-indigo-600" /> : <CheckCircle size={12} />,
+      cls: isAuto ? 'bg-violet-50 text-violet-600 border border-violet-100' : 'bg-blue-50 text-blue-600',
+      icon: isAuto ? <Zap size={12} className="fill-violet-600" /> : <CheckCircle size={12} />,
       label: isAuto ? 'AI Verified' : 'Verified'
     },
     pending: { cls: 'bg-amber-100 text-amber-700', icon: <Clock size={12} />, label: 'Pending' },
@@ -46,108 +47,10 @@ const VerificationBadge = ({ verification, ocrData }) => {
   };
   const { cls, icon, label } = map[verification] ?? map.none;
   return (
-    <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 w-fit transition-all uppercase tracking-tight ${cls}`}>
+    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 w-fit transition-all uppercase tracking-tight ${cls}`}>
       {icon}
       {label}
     </span>
-  );
-};
-
-// ─── Add Bill Modal ───────────────────────────────────────────
-const AddBillModal = ({ householdId, onClose, onSaved }) => {
-  const [form, setForm] = useState({
-    utility_type: 'Electricity',
-    amount: '',
-    due_date: '',
-    period: '',
-  });
-  const [saving, setSaving] = useState(false);
-  const [err, setErr] = useState('');
-
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErr('');
-    setSaving(true);
-    try {
-      await addBill({ ...form, household_id: householdId, amount: parseFloat(form.amount) });
-      onSaved();
-      onClose();
-    } catch (e) {
-      setErr(e.response?.data?.message || 'Failed to add bill');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <ModalBackdrop onClose={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-7 relative">
-        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors">
-          <X size={20} />
-        </button>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2.5 bg-indigo-50 rounded-xl text-indigo-600"><ReceiptText size={20} /></div>
-          <h2 className="text-xl font-bold text-slate-800">New Bill Entry</h2>
-        </div>
-
-        {err && <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">{err}</div>}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Utility Type</label>
-            <select
-              value={form.utility_type}
-              onChange={e => set('utility_type', e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 bg-slate-50"
-            >
-              {UTILITY_TYPES.map(t => <option key={t}>{t}</option>)}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Total Amount (KES)</label>
-            <input
-              type="number" min="1" step="0.01" required
-              value={form.amount} onChange={e => set('amount', e.target.value)}
-              placeholder="e.g. 3000"
-              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 bg-slate-50"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Period (e.g. March 2026)</label>
-            <input
-              type="text" required
-              value={form.period} onChange={e => set('period', e.target.value)}
-              placeholder="March 2026"
-              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 bg-slate-50"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Due Date</label>
-            <input
-              type="date" required
-              value={form.due_date} onChange={e => set('due_date', e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 bg-slate-50"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full mt-2 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-indigo-200"
-          >
-            {saving ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : <><Plus size={16} /> Add Bill Space</>}
-          </button>
-          <p className="text-[10px] text-center text-slate-400 mt-2">
-            The total amount will be split equally among all current household members.
-          </p>
-        </form>
-      </div>
-    </ModalBackdrop>
   );
 };
 
@@ -193,7 +96,7 @@ const UploadProofModal = ({ bill, onClose, onUploaded }) => {
           <X size={20} />
         </button>
         <div className="flex items-center gap-3 mb-1">
-          <div className="p-2.5 bg-indigo-50 rounded-xl text-indigo-600"><Upload size={20} /></div>
+          <div className="p-2.5 bg-violet-50 rounded-xl text-violet-600"><Upload size={20} /></div>
           <h2 className="text-xl font-bold text-slate-800">Upload Payment Proof</h2>
         </div>
         <p className="text-sm text-slate-500 mb-5 ml-14">
@@ -207,13 +110,13 @@ const UploadProofModal = ({ bill, onClose, onUploaded }) => {
             onDrop={handleDrop}
             onDragOver={e => e.preventDefault()}
             onClick={() => inputRef.current?.click()}
-            className="border-2 border-dashed border-indigo-200 rounded-2xl p-6 text-center cursor-pointer hover:bg-indigo-50/50 transition-colors"
+            className="border-2 border-dashed border-violet-200 rounded-2xl p-6 text-center cursor-pointer hover:bg-violet-50/50 transition-colors"
           >
             {preview ? (
               <img src={preview} alt="preview" className="max-h-40 mx-auto rounded-xl object-contain" />
             ) : (
               <>
-                <Upload size={28} className="mx-auto text-indigo-300 mb-3" />
+                <Upload size={28} className="mx-auto text-violet-300 mb-3" />
                 <p className="text-sm font-medium text-slate-600">Drag & drop or click to select</p>
                 <p className="text-xs text-slate-400 mt-1">JPG, PNG, PDF up to 10MB</p>
               </>
@@ -228,7 +131,7 @@ const UploadProofModal = ({ bill, onClose, onUploaded }) => {
           <button
             type="submit"
             disabled={!file || saving}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-indigo-200"
+            className="w-full py-3 bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-violet-200"
           >
             {saving ? <><Loader2 size={16} className="animate-spin" /> Uploading...</> : <><Upload size={16} /> Submit Proof</>}
           </button>
@@ -241,6 +144,10 @@ const UploadProofModal = ({ bill, onClose, onUploaded }) => {
 // ─── Details/Review Panel ─────────────────────────────────────────────
 const DetailsSidePanel = ({ bill, user, onClose, onApproved }) => {
   const [approvingProofId, setApprovingProofId] = useState(null);
+  const [rejectingProofId, setRejectingProofId] = useState(null);
+  const [reason, setReason] = useState('');
+  const [showRejectInput, setShowRejectInput] = useState(null); // proofId
+
 
   const handleApprove = async (proofId) => {
     setApprovingProofId(proofId);
@@ -251,6 +158,21 @@ const DetailsSidePanel = ({ bill, user, onClose, onApproved }) => {
       alert(e.response?.data?.message || 'Failed to approve proof');
     } finally {
       setApprovingProofId(null);
+    }
+  };
+
+  const handleReject = async (proofId) => {
+    if (!reason.trim()) return alert('Please provide a reason for rejection');
+    setRejectingProofId(proofId);
+    try {
+      await rejectProof(proofId, reason.trim());
+      onApproved(); // Refresh data (reusing same name for clarity in effect)
+      setShowRejectInput(null);
+      setReason('');
+    } catch (e) {
+      alert(e.response?.data?.message || 'Failed to reject proof');
+    } finally {
+      setRejectingProofId(null);
     }
   };
 
@@ -302,23 +224,68 @@ const DetailsSidePanel = ({ bill, user, onClose, onApproved }) => {
                     <div className="flex items-center justify-between mb-2">
                        <VerificationBadge verification={share.verification} ocrData={share.ocr_data} />
                        {canVerify && (
-                         <button 
-                           onClick={() => handleApprove(share.proof_id)}
-                           disabled={approvingProofId === share.proof_id}
-                           className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all shadow-md shadow-emerald-100 flex items-center gap-1"
-                         >
-                           {approvingProofId === share.proof_id ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
-                           Verify Payment
-                         </button>
+                         <div className="flex items-center gap-2">
+                           <button 
+                             onClick={() => handleApprove(share.proof_id)}
+                             disabled={approvingProofId === share.proof_id}
+                             className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all shadow-md shadow-emerald-100 flex items-center gap-1"
+                           >
+                             {approvingProofId === share.proof_id ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
+                             Verify
+                           </button>
+                           <button 
+                             onClick={() => setShowRejectInput(showRejectInput === share.proof_id ? null : share.proof_id)}
+                             className="bg-red-50 text-red-600 hover:bg-red-100 font-bold px-3 py-1.5 rounded-lg text-xs transition-all border border-red-100 flex items-center gap-1"
+                           >
+                              Reject
+                           </button>
+                         </div>
                        )}
                     </div>
+
+                    {showRejectInput === share.proof_id && (
+                      <div className="mb-4 p-3 bg-red-50/50 rounded-xl border border-red-100">
+                        <textarea
+                          placeholder="Why is it being rejected?"
+                          className="w-full text-xs p-2 rounded-lg border border-red-200 focus:outline-none focus:ring-1 focus:ring-red-400 bg-white"
+                          rows="2"
+                          value={reason}
+                          onChange={(e) => setReason(e.target.value)}
+                        />
+                        <div className="flex justify-end gap-2 mt-2">
+                          <button 
+                            onClick={() => setShowRejectInput(null)}
+                            className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 py-1"
+                          >
+                            Cancel
+                          </button>
+                          <button 
+                            onClick={() => handleReject(share.proof_id)}
+                            disabled={rejectingProofId === share.proof_id}
+                            className="bg-red-600 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-md shadow-lg shadow-red-100 flex items-center gap-1"
+                          >
+                            {rejectingProofId === share.proof_id ? <Loader2 size={10} className="animate-spin" /> : null}
+                            Confirm Reject
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {share.verification === 'rejected' && share.rejection_reason && (
+                      <div className="mb-3 p-2.5 bg-red-50 text-red-700 rounded-lg border-l-4 border-red-500 text-xs">
+                        <p className="font-bold flex items-center gap-1.5 mb-1">
+                          <X size={14} /> Rejection Reason:
+                        </p>
+                        <p className="opacity-80 italic">"{share.rejection_reason}"</p>
+                      </div>
+                    )}
                     {share.proof_image && (
                       <div className="rounded-lg border border-slate-200 overflow-hidden bg-white">
                         <img src={`http://localhost:5000/${share.proof_image}`} alt="Proof" className="w-full object-contain max-h-48" />
                       </div>
                     )}
                     {share.ocr_data && share.ocr_data.extractedAmount && (
-                      <div className="mt-2 text-[10px] bg-indigo-50 text-indigo-700 px-2 py-1 rounded border border-indigo-100 italic">
+                      <div className="mt-2 text-[10px] bg-violet-50 text-violet-700 px-2 py-1 rounded border border-violet-100 italic">
                         AI Detected Amount: {fmtKES(share.ocr_data.extractedAmount)}
                       </div>
                     )}
@@ -401,16 +368,6 @@ const BillTracking = () => {
     }
   };
 
-  const handleToggleStatus = async (bill) => {
-    const next = bill.status === 'paid' ? 'pending' : 'paid';
-    try {
-      await updateBillStatus(bill.id, next);
-      setBills(prev => prev.map(b => b.id === bill.id ? { ...b, status: next } : b));
-    } catch {
-      alert('Failed to update status.');
-    }
-  };
-
   const filtered = bills.filter(b => {
     const matchSearch = b.utility_type.toLowerCase().includes(search.toLowerCase()) ||
       (b.period || '').toLowerCase().includes(search.toLowerCase());
@@ -427,16 +384,19 @@ const BillTracking = () => {
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col">
         <div className="h-16 flex items-center px-6 border-b border-slate-100">
-          <div className="flex items-center gap-2 text-indigo-600">
-            <Zap size={24} className="fill-indigo-600" />
-            <span className="text-xl font-bold tracking-tight text-slate-900">AI Utility</span>
+          <div className="flex items-center gap-2 text-violet-600">
+            <Sparkles size={24} className="text-violet-500 fill-violet-500" />
+            <span className="text-xl tracking-tight">
+              <span className="font-poppins font-extrabold text-violet-900">Aiva</span>
+              <span className="font-poppins font-medium text-violet-500">Pay</span>
+            </span>
           </div>
         </div>
         <nav className="flex-1 px-4 py-6 space-y-1 text-slate-600 font-medium">
           <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-colors">
             <Home size={20} /> Dashboard
           </Link>
-          <Link to="/bills" className="flex items-center gap-3 px-3 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl transition-colors">
+          <Link to="/bills" className="flex items-center gap-3 px-3 py-2.5 bg-violet-50 text-violet-700 rounded-xl transition-colors">
             <FileText size={20} /> Bills &amp; Splits
           </Link>
           <Link to="/household" className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-colors">
@@ -449,7 +409,7 @@ const BillTracking = () => {
         {/* User footer */}
         <div className="p-4 border-t border-slate-100">
           <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-            <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">
+            <div className="w-9 h-9 rounded-full bg-violet-100 flex items-center justify-center text-violet-700 font-bold text-sm">
               {user.name?.slice(0, 2).toUpperCase() || 'U'}
             </div>
             <div className="min-w-0">
@@ -457,30 +417,38 @@ const BillTracking = () => {
               <p className="text-xs text-slate-500 truncate">{household?.name || 'No household'}</p>
             </div>
           </div>
+          <button onClick={() => { localStorage.clear(); window.location.href='/login' }}
+            className="w-full flex items-center gap-2 mt-3 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-xl transition-colors font-medium">
+            <LogOut size={16} /> Sign Out
+          </button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="py-4 md:h-16 flex flex-wrap md:flex-nowrap items-center justify-between px-4 md:px-8 bg-white border-b border-slate-200 sticky top-0 z-10 gap-4">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
+        {/* Soft luxury glow background elements */}
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[40rem] h-[40rem] bg-pink-300/10 rounded-full blur-[120px] pointer-events-none -z-10 animate-pulse"></div>
+        <div className="absolute bottom-20 right-0 w-[30rem] h-[30rem] bg-violet-300/20 rounded-full blur-[120px] pointer-events-none -z-10 animate-pulse delay-1000"></div>
+
+        <header className="py-4 md:h-16 flex flex-wrap md:flex-nowrap items-center justify-between px-4 md:px-8 bg-white/80 backdrop-blur-md border-b border-slate-200/50 sticky top-0 z-20 gap-4">
           <div>
             <h1 className="text-xl font-semibold text-slate-800">Bill Tracking & Splits</h1>
             {household && (
               <p className="text-xs text-slate-400 -mt-0.5">{household.name}</p>
             )}
           </div>
-          <div className="flex items-center gap-3 md:gap-4 w-full md:w-auto justify-end">
+          <div className="flex items-center gap-3 md:gap-4 ml-auto">
             <NotificationBell />
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex-1 md:flex-none justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-[0_0_15px_rgba(79,70,229,0.3)] hover:shadow-[0_0_20px_rgba(79,70,229,0.5)] transition-all flex items-center gap-2 text-sm"
+              className="px-4 py-2 bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 text-white text-sm font-semibold rounded-xl shadow-[0_4px_14px_rgba(139,92,246,0.3)] hover:shadow-[0_6px_20px_rgba(139,92,246,0.4)] transition-all flex items-center gap-1.5 transform hover:-translate-y-0.5"
             >
-              <Plus size={18} /> New Bill
+              <Plus size={16} /> New Bill
             </button>
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto p-4 pb-24 md:p-8">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 pb-24 md:p-8">
           {error && (
             <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-3">
               <AlertCircle size={18} /> {error}
@@ -494,7 +462,7 @@ const BillTracking = () => {
                 { label: 'Total Bills', val: bills.length, cls: 'bg-slate-100 text-slate-700' },
                 { label: 'Paid', val: bills.filter(b => b.status === 'paid').length, cls: 'bg-emerald-100 text-emerald-700' },
                 { label: 'Pending', val: bills.filter(b => b.status !== 'paid').length, cls: 'bg-amber-100 text-amber-700' },
-                { label: 'Your Total Share', val: fmtKES(bills.reduce((s, b) => s + Number(b.user_share || 0), 0)), cls: 'bg-indigo-100 text-indigo-700' },
+                { label: 'Your Total Share', val: fmtKES(bills.reduce((s, b) => s + Number(b.user_share || 0), 0)), cls: 'bg-violet-100 text-violet-700' },
               ].map(({ label, val, cls }) => (
                 <div key={label} className={`px-4 py-2 rounded-xl text-sm font-semibold ${cls}`}>
                   {label}: <span className="font-bold">{val}</span>
@@ -506,14 +474,14 @@ const BillTracking = () => {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             {/* Toolbar */}
             <div className="p-4 border-b border-slate-100 flex items-center justify-between gap-4 bg-slate-50/50">
-              <div className="relative max-w-sm w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <div className="relative group flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-violet-500 transition-colors" size={18} />
                 <input
                   type="text"
-                  placeholder="Search by utility or period..."
+                  placeholder="Search bills, utilities, or periods..."
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/20 focus:border-violet-400 focus:scale-[1.01] transition-all shadow-sm"
                   value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none bg-white"
+                  onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
               <div className="relative">
@@ -531,7 +499,7 @@ const BillTracking = () => {
                       <button
                         key={s}
                         onClick={() => { setStatusFilter(s); setShowFilterMenu(false); }}
-                        className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${statusFilter === s ? 'bg-indigo-50 text-indigo-700' : 'hover:bg-slate-50 text-slate-700'}`}
+                        className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${statusFilter === s ? 'bg-violet-50 text-violet-700' : 'hover:bg-slate-50 text-slate-700'}`}
                       >
                         {s === 'all' ? 'All Statuses' : s.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}
                       </button>
@@ -626,7 +594,7 @@ const BillRow = ({ bill, household, onUploadProof, onViewDetails, onDelete, user
       <td className="px-6 py-4 font-semibold text-slate-900">{bill.utility_type}</td>
       <td className="px-6 py-4 text-slate-500">{bill.period || fmtDate(bill.due_date)}</td>
       <td className="px-6 py-4 font-medium text-slate-800">{fmtKES(bill.amount)}</td>
-      <td className="px-6 py-4 font-bold text-indigo-600">{fmtKES(bill.user_share)}</td>
+      <td className="px-6 py-4 font-bold text-violet-600">{fmtKES(bill.user_share)}</td>
       <td className="px-6 py-4">
         <StatusBadge status={bill.status} />
       </td>
@@ -645,7 +613,7 @@ const BillRow = ({ bill, household, onUploadProof, onViewDetails, onDelete, user
           ) : bill.share_status !== 'paid' ? (
             <button
               onClick={onUploadProof}
-              className="text-indigo-600 font-semibold hover:underline bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 text-xs transition-colors hover:bg-indigo-100"
+              className="text-violet-600 font-semibold hover:underline bg-violet-50 px-3 py-1.5 rounded-lg border border-violet-100 text-xs transition-colors hover:bg-violet-100"
             >
               <span className="flex items-center gap-1"><Upload size={12} /> Proof</span>
             </button>

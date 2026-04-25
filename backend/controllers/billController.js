@@ -2,13 +2,13 @@ const db = require('../db');
 
 // Add a bill (with optional splits)
 const addBill = async (req, res) => {
-    const { household_id, utility_type, amount, due_date, period, splits, usage_value, usage_unit } = req.body;
+    const { household_id, utility_type, amount, due_date, period, splits, consumption, units } = req.body;
     try {
         await db.query('BEGIN');
 
         const billResult = await db.query(
-            'INSERT INTO Bills (household_id, utility_type, amount, due_date, period, usage_value, usage_unit) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-            [household_id, utility_type, amount, due_date, period, usage_value, usage_unit]
+            'INSERT INTO Bills (household_id, utility_type, amount, due_date, period, consumption, units) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [household_id, utility_type, amount, due_date, period, consumption, units]
         );
         const bill = billResult.rows[0];
 
@@ -60,7 +60,7 @@ const getBills = async (req, res) => {
     try {
         const result = await db.query(`
             SELECT
-                b.id, b.utility_type, b.amount, b.due_date, b.period, b.status, b.created_at, b.usage_value, b.usage_unit,
+                b.id, b.utility_type, b.amount, b.due_date, b.period, b.status, b.created_at, b.consumption, b.units,
                 (
                     SELECT JSON_AGG(JSON_BUILD_OBJECT(
                         'user_id', sl.user_id,
@@ -90,16 +90,17 @@ const getBills = async (req, res) => {
 
         // Map over result to easily surface the current user's specific share at the root level for easy UI handling
         const enrichedBills = result.rows.map(bill => {
-            const userShareObj = (bill.shares || []).find(s => s.user_id === userId) || {};
+            const userShareObj = (bill.shares || []).find(s => s.user_id === userId);
             return {
                 ...bill,
-                user_share: userShareObj.amount || bill.amount,
-                share_status: userShareObj.share_status || 'unpaid',
-                verification: userShareObj.verification || 'none',
-                proof_id: userShareObj.proof_id,
-                proof_image: userShareObj.proof_image,
-                ocr_data: userShareObj.ocr_data,
-                rejection_reason: userShareObj.rejection_reason
+                user_share: userShareObj ? userShareObj.amount : 0,
+                is_participant: !!userShareObj,
+                share_status: userShareObj ? userShareObj.share_status : 'unpaid',
+                verification: userShareObj ? userShareObj.verification : 'none',
+                proof_id: userShareObj ? userShareObj.proof_id : null,
+                proof_image: userShareObj ? userShareObj.proof_image : null,
+                ocr_data: userShareObj ? userShareObj.ocr_data : null,
+                rejection_reason: userShareObj ? userShareObj.rejection_reason : null
             };
         });
 
@@ -241,7 +242,7 @@ const getAiInsights = async (req, res) => {
     const { householdId } = req.params;
     try {
         const result = await db.query(`
-            SELECT utility_type, amount, usage_value, usage_unit, period, due_date
+            SELECT utility_type, amount, consumption, units, period, due_date
             FROM Bills 
             WHERE household_id = $1
             ORDER BY utility_type, due_date DESC
@@ -262,8 +263,8 @@ const getAiInsights = async (req, res) => {
             const previous = bills[1];
 
             const amtChange = ((current.amount - previous.amount) / previous.amount) * 100;
-            const usageChange = current.usage_value && previous.usage_value ? 
-                ((current.usage_value - previous.usage_value) / previous.usage_value) * 100 : null;
+            const usageChange = current.consumption && previous.consumption ? 
+                ((current.consumption - previous.consumption) / previous.consumption) * 100 : null;
 
             // 🟢 Kudos for Savings
             if (amtChange <= -5) {
@@ -277,7 +278,7 @@ const getAiInsights = async (req, res) => {
                 insights.push({
                     type: 'success',
                     title: `Eco-Hero Status: ${type}`,
-                    message: `Consumption of ${type} is down by ${Math.abs(usageChange).toFixed(0)}% ${current.usage_unit}. The planet (and your wallet) thanks you!`,
+                    message: `Consumption of ${type} is down by ${Math.abs(usageChange).toFixed(0)}% ${current.units}. The planet (and your wallet) thanks you!`,
                     utility: type
                 });
             }

@@ -1,0 +1,7 @@
+[33m97dcb80[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{0}: reset: moving to HEAD
+[33m97dcb80[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{1}: reset: moving to HEAD
+[33m97dcb80[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{2}: commit: Added features
+[33mbb01bc2[m HEAD@{3}: commit: Almost completed the system
+[33ma30a3cc[m HEAD@{4}: commit: Added responsiveness across screens
+[33m263f1fd[m HEAD@{5}: commit: Added the Settings and Household Page, Added the invite member functionality, Improved OCR, Added Notofications functionality, Implemented shared expenses and verification of proof Peer-to-peer
+[33mde8f56e[m HEAD@{6}: commit (initial): This is my AI multi-utility bill platform, so far

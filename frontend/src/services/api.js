@@ -59,6 +59,36 @@ export const approveProof = (proofId) => API.patch(`/bills/proofs/${proofId}/app
 export const rejectProof = (proofId, reason) => API.patch(`/bills/proofs/${proofId}/reject`, { reason });
 
 // ─── Users ───────────────────────────────────────────────────
+export const fetchUsers = () => API.get('/users');
+export const fetchUserProfile = () => API.get('/users/me');
 export const updateProfile = (data) => API.put('/users/profile', data);
+
+// ─── Admin ───────────────────────────────────────────────────
+export const fetchAdminStats = () => API.get('/admin/stats');
+export const fetchAdminLogs = () => API.get('/admin/logs');
+export const fetchAdminUsers = () => API.get('/admin/users');
+export const updateAdminUser = (id, data) => API.put(`/admin/users/${id}`, data);
+export const deleteAdminUser = (id) => API.delete(`/admin/users/${id}`);
+export const fetchAdminHouseholds = () => API.get('/admin/households');
+export const updateAdminHousehold = (id, data) => API.put(`/admin/households/${id}`, data);
+export const fetchAdminBills = () => API.get('/admin/bills');
+export const fetchAdminProofs = () => API.get('/admin/proofs');
+export const exportAdminData = (type, format) => API.get(`/admin/export?type=${type}&format=${format}`, { responseType: 'blob' });
+
+// ─── Reports ─────────────────────────────────────────────────
+export const fetchPersonalReport = (params) => API.get('/reports/personal', { params });
+export const fetchHouseholdReport = (id, params) => API.get(`/reports/household/${id}`, { params });
+export const getExportUrl = (type, householdId, startDate, endDate, format) => {
+    const token = localStorage.getItem('token');
+    const params = new URLSearchParams({
+        type,
+        householdId: householdId || '',
+        startDate: startDate || '',
+        endDate: endDate || '',
+        token // We pass token in query for simple direct downloads if needed, but safer to use fetch. 
+              // However, backend exportPDF needs Auth. 
+    });
+    return `http://localhost:5000/api/reports/export/${format}?${params.toString()}`;
+};
 
 export default API;

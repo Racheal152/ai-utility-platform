@@ -5,7 +5,11 @@ CREATE TABLE Users (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
     role VARCHAR(50) DEFAULT 'user',
+    otp_code VARCHAR(10),
+    otp_expires TIMESTAMP,
+    email_verified BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

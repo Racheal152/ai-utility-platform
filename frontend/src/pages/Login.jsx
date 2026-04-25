@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Sparkles, AlertCircle, ShieldX, Ban, AlertTriangle } from 'lucide-react';
 import API from '../services/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [accountStatus, setAccountStatus] = useState(null); // 'suspended' | 'deleted' | 'restricted' | null
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+    setAccountStatus(null);
     setLoading(true);
     try {
       const res = await API.post('/auth/login', { email, password });
@@ -32,7 +34,12 @@ const Login = () => {
 
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password');
+      const data = err.response?.data;
+      if (data?.status) {
+        setAccountStatus(data.status); // suspended | deleted | restricted
+      } else {
+        setError(data?.message || 'Invalid email or password');
+      }
     } finally {
       setLoading(false);
     }
@@ -76,9 +83,36 @@ const Login = () => {
         </h2>
         <p className="text-slate-500 text-center mb-8 font-medium text-sm">AI-powered financial clarity.</p>
 
+        {/* Generic error */}
         {error && (
           <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-100 text-red-600 text-sm text-center flex items-center justify-center gap-2">
             <AlertCircle size={16} /> {error}
+          </div>
+        )}
+
+        {/* Account status banners */}
+        {accountStatus === 'suspended' && (
+          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+            <div className="flex items-center gap-2 font-bold mb-1">
+              <Ban size={16} className="text-amber-500" /> Account Suspended
+            </div>
+            <p className="text-amber-700 text-xs leading-relaxed">Your account has been suspended by an administrator. Please contact support for assistance.</p>
+          </div>
+        )}
+        {accountStatus === 'deleted' && (
+          <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-sm">
+            <div className="flex items-center gap-2 font-bold mb-1">
+              <ShieldX size={16} className="text-red-500" /> Account Deactivated
+            </div>
+            <p className="text-red-700 text-xs leading-relaxed">This account has been deactivated. Please contact support if you believe this is a mistake.</p>
+          </div>
+        )}
+        {accountStatus === 'restricted' && (
+          <div className="mb-6 p-4 rounded-2xl bg-orange-50 border border-orange-200 text-orange-800 text-sm">
+            <div className="flex items-center gap-2 font-bold mb-1">
+              <AlertTriangle size={16} className="text-orange-500" /> Access Restricted
+            </div>
+            <p className="text-orange-700 text-xs leading-relaxed">Your account access has been restricted. Please contact support for more information.</p>
           </div>
         )}
 
@@ -111,10 +145,19 @@ const Login = () => {
             />
           </div>
 
+          <div className="flex justify-end">
+            <Link
+              to="/forgot-password"
+              className="text-xs font-semibold text-violet-600 hover:text-violet-700 transition-colors"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 mt-8 bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 rounded-2xl text-white font-semibold flex items-center justify-center gap-2 transform transition-all shadow-[0_4px_14px_rgba(139,92,246,0.3)] hover:shadow-[0_6px_20px_rgba(139,92,246,0.4)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed text-base font-poppins"
+            className="w-full py-4 mt-4 bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 rounded-2xl text-white font-semibold flex items-center justify-center gap-2 transform transition-all shadow-[0_4px_14px_rgba(139,92,246,0.3)] hover:shadow-[0_6px_20px_rgba(139,92,246,0.4)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed text-base font-poppins"
           >
             {loading ? 'Authenticating...' : (<>Sign In <ArrowRight size={18} strokeWidth={2.5} /></>)}
           </button>

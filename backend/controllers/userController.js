@@ -11,7 +11,7 @@ const updateProfile = async (req, res) => {
         if (password) {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password, salt);
-            query += `, password = $${paramIndex}`;
+            query += `, password_hash = $${paramIndex}`;
             values.push(hashedPassword);
             paramIndex++;
         }
@@ -30,4 +30,23 @@ const updateProfile = async (req, res) => {
     }
 };
 
-module.exports = { updateProfile };
+const getProfile = async (req, res) => {
+    try {
+        const result = await db.query('SELECT id, name, email, phone, role, email_verified, created_at FROM Users WHERE id = $1', [req.user.id]);
+        if (result.rows.length === 0) return res.status(404).json({ message: 'User not found' });
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};
+
+const getUsers = async (req, res) => {
+    try {
+        const result = await db.query('SELECT id, name, email, role, created_at FROM Users ORDER BY created_at DESC');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};
+
+module.exports = { updateProfile, getProfile, getUsers };

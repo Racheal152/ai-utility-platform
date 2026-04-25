@@ -19,26 +19,14 @@ const Register = () => {
     setLoading(true);
     try {
       const res = await API.post('/auth/register', { name, email, password });
-      const { token, ...userData } = res.data;
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-
-      const searchParams = new URLSearchParams(window.location.search);
-      const inviteToken = searchParams.get('invite');
-      if (inviteToken) {
-        try {
-          await API.post('/households/join', { token: inviteToken });
-        } catch (e) {
-          console.error('Join via invite failed:', e);
-        }
-      }
-
-      navigate('/dashboard');
+      // Registration now requires OTP verification, so we don't store token yet
+      navigate('/verify-otp', { state: { email, inviteToken } });
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
+
   };
 
   useEffect(() => {

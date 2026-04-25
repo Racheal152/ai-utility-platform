@@ -21,8 +21,8 @@ const AddBillModal = ({ householdId, onClose, onSaved }) => {
     amount: '', 
     due_date: '', 
     period: '',
-    usage_value: '',
-    usage_unit: ''
+    consumption: '',
+    units: ''
   });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
@@ -120,15 +120,15 @@ const AddBillModal = ({ householdId, onClose, onSaved }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Usage Value (Optional)</label>
+              <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Consumption Value (Optional)</label>
               <input type="number" step="0.01" placeholder="e.g. 250"
-                value={form.usage_value} onChange={e => set('usage_value', e.target.value)}
+                value={form.consumption} onChange={e => set('consumption', e.target.value)}
                 className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-400 transition-all font-medium" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Unit</label>
               <input type="text" placeholder="e.g. kWh, m³, Liters"
-                value={form.usage_unit} onChange={e => set('usage_unit', e.target.value)}
+                value={form.units} onChange={e => set('units', e.target.value)}
                 className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-400 transition-all font-medium" />
             </div>
           </div>

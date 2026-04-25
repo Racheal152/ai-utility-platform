@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   FileText, Plus, Search, Filter, Home, Users, Settings, Sparkles, Zap,
   X, Upload, Eye, Trash2, CheckCircle, AlertCircle, Clock,
-  ChevronDown, Loader2, ReceiptText, LogOut
+  ChevronDown, Loader2, ReceiptText, LogOut, ShieldCheck, TrendingUp
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
@@ -348,7 +348,19 @@ const BillTracking = () => {
       const h = hRes.data;
       setHousehold(h);
       const bRes = await fetchBills(h.id);
-      setBills(bRes.data);
+      let fetchedBills = bRes.data;
+      if (h.role !== 'owner') {
+        fetchedBills = fetchedBills.filter(b => b.is_participant);
+      }
+      setBills(fetchedBills);
+      try {
+        const { fetchUserProfile } = await import('../services/api');
+        const uRes = await fetchUserProfile();
+        setUser(uRes.data);
+        localStorage.setItem('user', JSON.stringify(uRes.data));
+      } catch (e) {
+        console.error('Failed to load user profile', e);
+      }
     } catch (e) {
       setError(e.response?.data?.message || 'Failed to load data. Is the server running?');
     } finally {
@@ -375,9 +387,9 @@ const BillTracking = () => {
     return matchSearch && matchStatus;
   });
 
-  const user = (() => {
+  const [user, setUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem('user')) || {}; } catch { return {}; }
-  })();
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -402,9 +414,17 @@ const BillTracking = () => {
           <Link to="/household" className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-colors">
             <Users size={20} /> Household
           </Link>
+          <Link to="/reports" className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-colors">
+            <TrendingUp size={20} /> Reports
+          </Link>
           <Link to="/settings" className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-colors">
             <Settings size={20} /> Settings
           </Link>
+          {user.role === 'admin' && (
+            <Link to="/admin" className="flex items-center gap-3 px-3 py-2.5 text-violet-500 hover:bg-violet-50 hover:text-violet-700 rounded-xl transition-colors mt-4 border border-violet-100 bg-violet-50/50">
+              <ShieldCheck size={20} /> Admin Panel
+            </Link>
+          )}
         </nav>
         {/* User footer */}
         <div className="p-4 border-t border-slate-100">

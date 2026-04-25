@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, FileText, Users, Settings, LogOut } from 'lucide-react';
+import { Home, FileText, Users, Settings, LogOut, TrendingUp } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const MobileNav = () => {
@@ -9,6 +9,7 @@ const MobileNav = () => {
   const links = [
     { to: '/dashboard', icon: <Home size={20} />, label: 'Home' },
     { to: '/bills', icon: <FileText size={20} />, label: 'Bills' },
+    { to: '/reports', icon: <TrendingUp size={20} />, label: 'Reports' },
     { to: '/household', icon: <Users size={20} />, label: 'Household' },
     { to: '/settings', icon: <Settings size={20} />, label: 'Settings' }
   ];

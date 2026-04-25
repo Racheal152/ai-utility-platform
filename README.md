@@ -48,7 +48,9 @@
 | 📊 **Usage Tracking** | Record volumetric usage (kWh, m³, Liters) alongside monetary amounts |
 | 🔔 **Smart Notifications** | Broadcast system — every major action notifies all household members |
 | ⏰ **Deadline Reminders** | Automated daily reminders for bills due the next day via node-cron |
-| 🔐 **Secure Auth** | JWT-based authentication with bcrypt password hashing |
+| 🛡️ **Admin Dashboard** | Comprehensive system oversight, proof verification modal, user management, and CSV/PDF exports |
+| 🌐 **Public Portal** | Animated Landing Page, About Us, Terms & Conditions, and a detailed visual User Guide |
+| 🔐 **Secure Auth** | JWT-based authentication with bcrypt password hashing and OTP-based email verification |
 
 ---
 
@@ -77,6 +79,7 @@
 | **React Router v6** | Client-side routing |
 | **Axios** | HTTP client with JWT interceptors |
 | **Recharts** | Data visualization (Bar, Line, Area charts) |
+| **Framer Motion** | Premium scroll-triggered animations and page transitions |
 | **Lucide React** | Icon library |
 | **Tailwind CSS** | Utility-first styling (via CDN/Vite config) |
 
@@ -88,8 +91,8 @@
 ┌─────────────────────────────────────────────────────────┐
 │                     FRONTEND (React)                    │
 │  ┌──────────┐ ┌──────────┐ ┌───────────┐ ┌──────────┐  │
-│  │Dashboard │ │ Bills &  │ │Household │ │Settings │  │
-│  │          │ │  Splits  │ │  Manager │ │         │  │
+│  │Dashboard │ │ Bills &  │ │Household │ │ Admin    │  │
+│  │          │ │  Splits  │ │  Manager │ │ Dashboard│  │
 │  └──────────┘ └──────────┘ └───────────┘ └──────────┘  │
 │          └──────────── Axios (api.js) ──────────────┘   │
 └────────────────────────────┬────────────────────────────┘
@@ -97,8 +100,8 @@
 ┌────────────────────────────▼────────────────────────────┐
 │                  BACKEND (Node.js / Express)             │
 │  ┌──────────┐ ┌──────────┐ ┌───────────┐ ┌──────────┐  │
-│  │   Auth   │ │Household │ │  Bills &  │ │Notifica- │  │
-│  │Controller│ │Controller│ │ Payments  │ │  tions   │  │
+│  │   Auth   │ │Household │ │  Bills &  │ │ Admin    │  │
+│  │Controller│ │Controller│ │ Payments  │ │Controller│  │
 │  └──────────┘ └──────────┘ └───────────┘ └──────────┘  │
 │  ┌──────────────────────────────────────────────────┐   │
 │  │                   Services Layer                  │   │
@@ -113,7 +116,7 @@
 │                   PostgreSQL Database                     │
 │  Users │ Households │ HouseholdMembers │ Bills           │
 │  ExpenseShares │ ShareLines │ PaymentProofs │ Forecasts   │
-│  Notifications                                           │
+│  Notifications │ ActivityLogs                            │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -460,6 +463,22 @@ User profile management:
 - Change password (with current password verification).
 - Account info display.
 
+#### Admin Dashboard (`/admin`) — `frontend/src/pages/AdminDashboard.jsx`
+Complete system oversight panel for Platform Administrators:
+- **Global Stats**: Overview of total revenue, users, households, and verification rates.
+- **User Management**: View, delete, and manage user roles and statuses with a custom persistent-color dropdown.
+- **Payment Proofs**: Centralized view to approve or reject proofs with a dedicated **View Proof Modal** for visual receipt inspection.
+- **System Exports**: 1-click export of system data to CSV or PDF formats.
+- **System Logs**: View recent administrative actions.
+
+#### Public Portal (`/`, `/about`, `/terms`, `/guide`)
+- Beautifully animated Landing page with Framer Motion.
+- Comprehensive `UserGuide.jsx` featuring high-quality platform screenshots and step-by-step instructions.
+- Dedicated `AboutUs.jsx` and `Terms.jsx` pages for platform information.
+
+#### Authentication & OTP (`/forgot-password`, `/verify-otp`)
+- Full OTP-based password reset flow utilizing Nodemailer.
+
 ---
 
 ### Components
@@ -728,11 +747,18 @@ ai-utility-platform/
 │       │   ├── NotificationBell.jsx  # Real-time notification dropdown
 │       │   └── UsageInsights.jsx     # AI insight cards renderer
 │       ├── pages/
+│       │   ├── Landing.jsx           # Animated public landing page
+│       │   ├── UserGuide.jsx         # Visual user guide with screenshots
+│       │   ├── AboutUs.jsx           # About page
+│       │   ├── Terms.jsx             # Terms & Conditions
 │       │   ├── Login.jsx
 │       │   ├── Register.jsx
+│       │   ├── ForgotPassword.jsx    # OTP request page
+│       │   ├── VerifyOTP.jsx         # OTP verification and password reset
 │       │   ├── Dashboard.jsx         # Homepage with charts, insights, predictions
 │       │   ├── BillTracking.jsx      # Bills list, proof upload & review
 │       │   ├── Household.jsx         # Member management & household settings
+│       │   ├── AdminDashboard.jsx    # Complete admin control panel
 │       │   └── Settings.jsx          # User profile & password change
 │       ├── services/
 │       │   └── api.js                # Axios instance + all API call exports

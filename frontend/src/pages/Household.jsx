@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, FileText, Users, Settings, LogOut, Sparkles, UserPlus, Copy, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
+import { Home, FileText, Users, Settings, LogOut, Sparkles, UserPlus, Copy, CheckCircle, Loader2, AlertCircle, TrendingUp } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ensureHousehold, fetchMembers, generateInvite, removeMember, transferOwnership, updateHousehold } from '../services/api';
 import { UserMinus, ShieldCheck, Pencil, Save, X as CloseIcon } from 'lucide-react';
@@ -19,7 +19,9 @@ const Household = () => {
   const [newName, setNewName] = useState('');
   const [updatingName, setUpdatingName] = useState(false);
 
-  const user = (() => { try { return JSON.parse(localStorage.getItem('user')) || {}; } catch { return {}; } })();
+  const [user, setUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('user')) || {}; } catch { return {}; }
+  });
 
   useEffect(() => {
     const loadData = async () => {
@@ -29,6 +31,11 @@ const Household = () => {
         const h = hRes.data;
         setHousehold(h);
         setNewName(h.name);
+
+        const { fetchUserProfile } = await import('../services/api');
+        const uRes = await fetchUserProfile();
+        setUser(uRes.data);
+        localStorage.setItem('user', JSON.stringify(uRes.data));
 
         const mRes = await fetchMembers(h.id);
         setMembers(mRes.data);
@@ -135,9 +142,17 @@ const Household = () => {
           <Link to="/household" className="flex items-center gap-3 px-3 py-2.5 bg-violet-50 text-violet-700 rounded-xl transition-colors">
             <Users size={20} /> Household
           </Link>
+          <Link to="/reports" className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-colors">
+            <TrendingUp size={20} /> Reports
+          </Link>
           <Link to="/settings" className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-colors">
             <Settings size={20} /> Settings
           </Link>
+          {user.role === 'admin' && (
+            <Link to="/admin" className="flex items-center gap-3 px-3 py-2.5 text-violet-500 hover:bg-violet-50 hover:text-violet-700 rounded-xl transition-colors mt-4 border border-violet-100 bg-violet-50/50">
+              <ShieldCheck size={20} /> Admin Panel
+            </Link>
+          )}
         </nav>
         <div className="p-4 border-t border-slate-100 space-y-2">
           <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">

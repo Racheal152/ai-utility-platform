@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, FileText, Users, Settings as SettingsIcon, LogOut, Sparkles, Save, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Home, FileText, Users, Settings as SettingsIcon, LogOut, Sparkles, Save, Loader2, AlertCircle, CheckCircle, ShieldCheck, TrendingUp } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { updateProfile } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
@@ -15,6 +15,22 @@ const Settings = () => {
   const [password, setPassword] = useState('');
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
+
+  React.useEffect(() => {
+    const getLatestProfile = async () => {
+      try {
+        const { fetchUserProfile } = await import('../services/api');
+        const res = await fetchUserProfile();
+        const userData = res.data;
+        setUser(userData);
+        setName(userData.name || '');
+        localStorage.setItem('user', JSON.stringify(userData));
+      } catch (err) {
+        console.error('Failed to fetch latest profile:', err);
+      }
+    };
+    getLatestProfile();
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -68,9 +84,17 @@ const Settings = () => {
           <Link to="/household" className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-colors">
             <Users size={20} /> Household
           </Link>
+          <Link to="/reports" className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-colors">
+            <TrendingUp size={20} /> Reports
+          </Link>
           <Link to="/settings" className="flex items-center gap-3 px-3 py-2.5 bg-violet-50 text-violet-700 rounded-xl transition-colors">
             <SettingsIcon size={20} /> Settings
           </Link>
+          {user.role === 'admin' && (
+            <Link to="/admin" className="flex items-center gap-3 px-3 py-2.5 text-violet-500 hover:bg-violet-50 hover:text-violet-700 rounded-xl transition-colors mt-4 border border-violet-100 bg-violet-50/50">
+              <ShieldCheck size={20} /> Admin Panel
+            </Link>
+          )}
         </nav>
         <div className="p-4 border-t border-slate-100 space-y-2">
           <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">

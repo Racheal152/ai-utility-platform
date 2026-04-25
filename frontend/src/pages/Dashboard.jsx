@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Home, FileText, Users, Settings, Sparkles, Zap,
   TrendingUp, TrendingDown, Minus, Droplet, Wifi,
-  DollarSign, Plus, AlertCircle, Loader2, LogOut
+  DollarSign, Plus, AlertCircle, Loader2, LogOut, ShieldCheck
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
@@ -39,7 +39,9 @@ const Dashboard = () => {
   const [filterPeriod, setFilterPeriod] = useState('All');
   const [predictionView, setPredictionView] = useState('list'); // 'list', 'bar', or 'line'
 
-  const user = (() => { try { return JSON.parse(localStorage.getItem('user')) || {}; } catch { return {}; } })();
+  const [user, setUser] = useState(() => { 
+    try { return JSON.parse(localStorage.getItem('user')) || {}; } catch { return {}; } 
+  });
 
   const loadData = async () => {
     setLoading(true);
@@ -49,12 +51,25 @@ const Dashboard = () => {
       const h = hRes.data;
       setHousehold(h);
       const bRes = await fetchBills(h.id);
-      setBills(bRes.data);
+      let fetchedBills = bRes.data;
+      // If member (not owner), only show bills they are participating in
+      if (h.role !== 'owner') {
+        fetchedBills = fetchedBills.filter(b => b.is_participant);
+      }
+      setBills(fetchedBills);
       try {
         const pRes = await fetchPredictions(h.id);
         setPrediction(pRes.data);
       } catch (e) {
         console.error('Failed to load predictions', e);
+      }
+      try {
+        const { fetchUserProfile } = await import('../services/api');
+        const uRes = await fetchUserProfile();
+        setUser(uRes.data);
+        localStorage.setItem('user', JSON.stringify(uRes.data));
+      } catch (e) {
+        console.error('Failed to load user profile', e);
       }
       try {
         const iRes = await fetchAiInsights(h.id);
@@ -107,8 +122,8 @@ const Dashboard = () => {
     return periods.map(p => {
       const data = { period: p };
       bills.filter(b => b.period === p).forEach(b => {
-        if (b.usage_value) {
-          data[b.utility_type.toLowerCase()] = Number(b.usage_value);
+        if (b.consumption) {
+          data[b.utility_type.toLowerCase()] = Number(b.consumption);
         }
       });
       return data;
@@ -118,6 +133,15 @@ const Dashboard = () => {
   const availablePeriods = (() => {
     const months = [...new Set(bills.map(b => b.period))].filter(Boolean);
     return ['All', ...months];
+  })();
+
+  const miniChartData = (() => {
+    const map = {};
+    bills.forEach(b => {
+      const p = b.period || 'Unknown';
+      map[p] = (map[p] || 0) + Number(b.user_share || 0);
+    });
+    return Object.entries(map).map(([period, total]) => ({ period, total })).reverse().slice(-6);
   })();
 
   const COLORS = ['#6366f1', '#14b8a6', '#f59e0b', '#ec4899', '#8b5cf6', '#64748b'];
@@ -146,9 +170,17 @@ const Dashboard = () => {
           <Link to="/household" className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-colors">
             <Users size={20} /> Household
           </Link>
+          <Link to="/reports" className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-colors">
+            <TrendingUp size={20} /> Reports
+          </Link>
           <Link to="/settings" className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-colors">
             <Settings size={20} /> Settings
           </Link>
+          {user.role === 'admin' && (
+            <Link to="/admin" className="flex items-center gap-3 px-3 py-2.5 text-violet-500 hover:bg-violet-50 hover:text-violet-700 rounded-xl transition-colors mt-4 border border-violet-100 bg-violet-50/50">
+              <ShieldCheck size={20} /> Admin Panel
+            </Link>
+          )}
         </nav>
         <div className="p-4 border-t border-slate-100 space-y-2">
           <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
@@ -221,232 +253,38 @@ const Dashboard = () => {
                 </div>
               )}
 
-              {/* Usage Trends Chart */}
-              {usageTrendData.length > 0 && (
-                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm overflow-hidden relative group">
-                   <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="flex items-center gap-1.5 px-2 py-1 bg-violet-50 text-violet-600 rounded-lg text-[10px] font-bold uppercase tracking-widest border border-violet-100">
-                        <TrendingUp size={12} /> Consumption Tracking
-                      </div>
-                   </div>
-                   <h2 className="text-lg font-bold text-slate-800 mb-1">Household Usage Trends</h2>
-                   <p className="text-xs text-slate-400 font-medium mb-8">Volumetric consumption tracking over time</p>
-                   
-                   <div className="h-64 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                         <AreaChart data={usageTrendData}>
-                            <defs>
-                               <linearGradient id="colorElec" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.1}/>
-                                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                               </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} dy={10} />
-                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                            <Tooltip 
-                               contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
-                            />
-                            {UTILITY_TYPES.map((type, idx) => (
-                               <Area 
-                                  key={type}
-                                  type="monotone" 
-                                  dataKey={type.toLowerCase()} 
-                                  stroke={COLORS[idx % COLORS.length]} 
-                                  fillOpacity={1} 
-                                  fill={`url(#colorElec)`} 
-                                  strokeWidth={3}
-                                  connectNulls
-                               />
-                            ))}
-                         </AreaChart>
-                      </ResponsiveContainer>
-                   </div>
-                </div>
-              )}
-
-              {/* Visual Analytics Chart */}
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                  <div>
-                    <h2 className="text-lg font-bold text-slate-800">Expense Analytics</h2>
-                    <p className="text-xs text-slate-400 font-medium">Historical look at your paid shares</p>
+              {/* Mini Summary Chart */}
+              {miniChartData.length > 0 && (
+                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative group hover:border-violet-200 transition-all overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                     <button onClick={() => navigate('/reports')} className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 text-violet-600 rounded-lg text-xs font-bold transition-all hover:bg-violet-100">
+                       Full Reports <TrendingUp size={14} />
+                     </button>
                   </div>
-
-                  <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl w-fit">
-                    <select
-                      value={filterPeriod}
-                      onChange={(e) => setFilterPeriod(e.target.value)}
-                      className="bg-white px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 border-none outline-none shadow-sm focus:scale-[1.01] transition-all cursor-pointer"
-                    >
-                      {availablePeriods.map(p => <option key={p} value={p}>{p}</option>)}
-                    </select>
-
-                    <div className="h-4 w-[1px] bg-slate-300 mx-1"></div>
-
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => setChartType('bar')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${chartType === 'bar' ? 'bg-violet-500 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:shadow-sm'}`}
-                      >
-                        Bar
-                      </button>
-                      <button
-                        onClick={() => setChartType('line')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${chartType === 'line' ? 'bg-violet-500 text-white shadow-md' : 'text-slate-500 hover:bg-white hover:shadow-sm'}`}
-                      >
-                        Line
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {loading ? (
-                  <div className="h-64 flex items-center justify-center text-slate-400"><Loader2 size={28} className="animate-spin" /></div>
-                ) : analyticsData.length === 0 ? (
-                  <div className="h-64 flex items-center justify-center text-slate-400 text-sm">No paid bills for this period.</div>
-                ) : (
-                  <div className="h-64 w-full relative" style={{ minWidth: 0, minHeight: '256px' }}>
-                    <ResponsiveContainer width="99%" height="100%">
-                      {chartType === 'bar' ? (
-                        <BarChart data={analyticsData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(val) => `KES ${val}`} />
-                          <Tooltip
-                            cursor={{ fill: '#f8fafc' }}
-                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', padding: '12px' }}
-                            formatter={(value) => [`KES ${value.toLocaleString()}`, 'Amount']}
-                          />
-                          <Bar dataKey="amount" radius={[6, 6, 0, 0]}>
-                            {analyticsData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      ) : (
-                        <LineChart data={analyticsData} margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(val) => `KES ${val}`} />
-                          <Tooltip
-                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', padding: '12px' }}
-                            formatter={(value) => [`KES ${value.toLocaleString()}`, 'Amount']}
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="amount"
-                            stroke="#8b5cf6"
-                            strokeWidth={3}
-                            dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }}
-                            activeDot={{ r: 6, fill: '#7c3aed', shadow: '0 0 10px rgba(139, 92, 246, 0.5)' }}
-                          />
-                        </LineChart>
-                      )}
+                  <h2 className="text-lg font-bold text-slate-800 mb-1 flex items-center gap-2">
+                    <TrendingUp size={20} className="text-violet-500" /> Recent Spending Trend
+                  </h2>
+                  <p className="text-xs text-slate-400 font-medium mb-6">Your total share over the last few periods</p>
+                  
+                  <div className="h-48 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={miniChartData}>
+                        <defs>
+                          <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.2}/>
+                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} dy={10} />
+                        <Tooltip 
+                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', padding: '8px' }}
+                          formatter={(value) => [fmtKES(value), 'Total Share']}
+                          labelStyle={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold' }}
+                        />
+                        <Area type="monotone" dataKey="total" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorTotal)" />
+                      </AreaChart>
                     </ResponsiveContainer>
                   </div>
-                )}
-              </div>
-
-              {/* AI Prediction Breakdown */}
-              {prediction && prediction.predictions.length > 0 && (
-                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm overflow-hidden min-h-[16rem]">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                    <div>
-                      <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <Zap size={20} className="text-violet-500 fill-violet-500" /> AI Prediction Breakdown
-                      </h2>
-                      <p className="text-xs text-slate-400 font-medium">Estimated costs for next month</p>
-                    </div>
-
-                    <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl w-fit">
-                      <button
-                        onClick={() => setPredictionView('list')}
-                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all shadow-sm ${predictionView === 'list' ? 'bg-violet-500 text-white' : 'text-slate-500 hover:bg-white'}`}
-                      >
-                        List
-                      </button>
-                      <button
-                        onClick={() => setPredictionView('bar')}
-                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all shadow-sm ${predictionView === 'bar' ? 'bg-violet-500 text-white' : 'text-slate-500 hover:bg-white'}`}
-                      >
-                        Bar
-                      </button>
-                      <button
-                        onClick={() => setPredictionView('line')}
-                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all shadow-sm ${predictionView === 'line' ? 'bg-violet-500 text-white' : 'text-slate-500 hover:bg-white'}`}
-                      >
-                        Line
-                      </button>
-                    </div>
-                  </div>
-
-                  {predictionView === 'list' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {prediction.predictions.map((p, idx) => (
-                        <div key={idx} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 flex items-center justify-between group hover:border-violet-200 hover:bg-violet-50/30 transition-all">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm border border-slate-100 text-slate-500 group-hover:text-violet-600 transition-colors">
-                              {utilityIcon(p.utility_type)}
-                            </div>
-                            <div>
-                              <p className="font-bold text-slate-800 text-sm">{p.utility_type}</p>
-                              <p className="text-[10px] text-slate-400 font-medium italic">Conf: {Math.round(p.confidence * 100)}%</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-bold text-violet-700 text-sm">{fmtKES(p.predicted_amount)}</p>
-                            <div className="flex items-center justify-end gap-1 mt-1">
-                              {p.trend === 'increasing' ? <TrendingUp size={12} className="text-red-500" /> : p.trend === 'lowering' ? <TrendingDown size={12} className="text-emerald-500" /> : <Minus size={12} className="text-slate-400" />}
-                              <span className={`text-[10px] font-bold uppercase tracking-wider ${p.trend === 'increasing' ? 'text-red-500' : p.trend === 'lowering' ? 'text-emerald-500' : 'text-slate-400'}`}>
-                                {p.trend}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="h-64 w-full relative" style={{ minWidth: 0, minHeight: '256px' }}>
-                      <ResponsiveContainer width="99%" height="100%">
-                        {predictionView === 'bar' ? (
-                          <BarChart data={prediction.predictions} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="utility_type" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} dy={10} />
-                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} tickFormatter={(val) => `KES ${val}`} />
-                            <Tooltip
-                              cursor={{ fill: '#f8fafc' }}
-                              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', padding: '12px' }}
-                              formatter={(value) => [`KES ${value.toLocaleString()}`, 'Projected']}
-                            />
-                            <Bar dataKey="predicted_amount" radius={[6, 6, 0, 0]}>
-                              {prediction.predictions.map((entry, index) => (
-                                <Cell key={`cell-p-${index}`} fill={COLORS[index % COLORS.length]} />
-                              ))}
-                            </Bar>
-                          </BarChart>
-                        ) : (
-                          <LineChart data={prediction.predictions} margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="utility_type" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} dy={10} />
-                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} tickFormatter={(val) => `KES ${val}`} />
-                            <Tooltip
-                              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', padding: '12px' }}
-                              formatter={(value) => [`KES ${value.toLocaleString()}`, 'Projected']}
-                            />
-                            <Line
-                              type="monotone"
-                              dataKey="predicted_amount"
-                              stroke="#8b5cf6"
-                              strokeWidth={4}
-                              dot={{ r: 5, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }}
-                              activeDot={{ r: 7, fill: '#7c3aed', shadow: '0 0 10px rgba(139, 92, 246, 0.4)' }}
-                            />
-                          </LineChart>
-                        )}
-                      </ResponsiveContainer>
-                    </div>
-                  )}
                 </div>
               )}
             </div>

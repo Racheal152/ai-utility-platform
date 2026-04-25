@@ -23,6 +23,18 @@ app.get('/api/db-test', async (req, res) => {
     }
 });
 
+app.get('/api/setup-db', async (req, res) => {
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        const sql = fs.readFileSync(path.join(__dirname, 'init.sql'), 'utf8');
+        await pool.query(sql);
+        res.json({ success: true, message: 'Database initialized successfully!' });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 app.use(cors({
     origin: process.env.FRONTEND_URL || '*',
     credentials: true

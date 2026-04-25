@@ -2,7 +2,7 @@ const db = require('../db');
 const bcrypt = require('bcryptjs');
 
 const updateProfile = async (req, res) => {
-    const { name, password } = req.body;
+    const { name, password, phone } = req.body;
     try {
         let query = 'UPDATE Users SET name = $1';
         const values = [name];
@@ -16,7 +16,13 @@ const updateProfile = async (req, res) => {
             paramIndex++;
         }
 
-        query += ` WHERE id = $${paramIndex} RETURNING id, name, email`;
+        if (phone) {
+            query += `, phone = $${paramIndex}`;
+            values.push(phone);
+            paramIndex++;
+        }
+
+        query += ` WHERE id = $${paramIndex} RETURNING id, name, email, phone`;
         values.push(req.user.id);
 
         const result = await db.query(query, values);
@@ -42,7 +48,7 @@ const getProfile = async (req, res) => {
 
 const getUsers = async (req, res) => {
     try {
-        const result = await db.query('SELECT id, name, email, role, created_at FROM Users ORDER BY created_at DESC');
+        const result = await db.query('SELECT id, name, email, phone, role, created_at FROM Users ORDER BY created_at DESC');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });

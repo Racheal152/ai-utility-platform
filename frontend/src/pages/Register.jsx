@@ -6,6 +6,7 @@ import API from '../services/api';
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,7 @@ const Register = () => {
     setError('');
     setLoading(true);
     try {
-      const res = await API.post('/auth/register', { name, email, password });
+      const res = await API.post('/auth/register', { name, email, password, phone });
       // Registration now requires OTP verification, so we don't store token yet
       navigate('/verify-otp', { state: { email, inviteToken } });
     } catch (err) {
@@ -96,6 +97,19 @@ const Register = () => {
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Sparkles className="h-5 w-5 text-slate-400 group-focus-within:text-violet-500 transition-colors" />
+            </div>
+            <input
+              type="tel" required
+              className="block w-full pl-12 pr-4 py-4 bg-white/70 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:scale-[1.01] transition-all font-medium"
+              placeholder="Phone Number"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
             />
           </div>
 

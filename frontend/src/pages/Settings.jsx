@@ -12,6 +12,7 @@ const Settings = () => {
   });
   
   const [name, setName] = useState(user.name || '');
+  const [phone, setPhone] = useState(user.phone || '');
   const [password, setPassword] = useState('');
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
@@ -24,6 +25,7 @@ const Settings = () => {
         const userData = res.data;
         setUser(userData);
         setName(userData.name || '');
+        setPhone(userData.phone || '');
         localStorage.setItem('user', JSON.stringify(userData));
       } catch (err) {
         console.error('Failed to fetch latest profile:', err);
@@ -43,11 +45,11 @@ const Settings = () => {
     setSaving(true);
     setMsg({ type: '', text: '' });
     try {
-      const payload = { name };
+      const payload = { name, phone };
       if (password) payload.password = password;
       const res = await updateProfile(payload);
       
-      const updatedUser = { ...user, name: res.data.user.name };
+      const updatedUser = { ...user, name: res.data.user.name, phone: res.data.user.phone };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
       setPassword('');
@@ -161,6 +163,17 @@ const Settings = () => {
                   type="text" 
                   value={name} 
                   onChange={e => setName(e.target.value)}
+                  required
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:bg-white focus:scale-[1.01] transition-all" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Phone Number</label>
+                <input 
+                  type="tel" 
+                  value={phone} 
+                  onChange={e => setPhone(e.target.value)}
                   required
                   className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:bg-white focus:scale-[1.01] transition-all" 
                 />

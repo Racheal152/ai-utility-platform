@@ -341,6 +341,7 @@ const AdminDashboard = () => {
                       <tr>
                         <th className="px-6 py-4">User</th>
                         <th className="px-6 py-4">Role</th>
+                        <th className="px-6 py-4">Phone</th>
                         <th className="px-6 py-4">Status</th>
                         <th className="px-6 py-4">Risk Score</th>
                         <th className="px-6 py-4">Joined</th>
@@ -362,6 +363,9 @@ const AdminDashboard = () => {
                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${(u.role || 'user') === 'admin' ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-600'}`}>
                               {u.role || 'user'}
                             </span>
+                          </td>
+                          <td className="px-6 py-4 text-xs font-medium text-slate-600">
+                            {u.phone || '-'}
                           </td>
                           <td className="px-6 py-4">
                             <div className="relative">

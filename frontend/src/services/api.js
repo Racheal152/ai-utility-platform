@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-    baseURL: 'http://localhost:5000/api',
+    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
 });
 
 API.interceptors.request.use((config) => {
@@ -85,10 +85,10 @@ export const getExportUrl = (type, householdId, startDate, endDate, format) => {
         householdId: householdId || '',
         startDate: startDate || '',
         endDate: endDate || '',
-        token // We pass token in query for simple direct downloads if needed, but safer to use fetch. 
-              // However, backend exportPDF needs Auth. 
+        token 
     });
-    return `http://localhost:5000/api/reports/export/${format}?${params.toString()}`;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+    return `${baseUrl}/reports/export/${format}?${params.toString()}`;
 };
 
 export default API;

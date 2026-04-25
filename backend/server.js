@@ -1,11 +1,27 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const pool = require('./db');
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+app.get('/api/db-test', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT NOW()');
+        res.json({
+            success: true,
+            time: result.rows[0]
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            error: err.message
+        });
+    }
+});
 
 app.use(cors({
     origin: process.env.FRONTEND_URL || '*',

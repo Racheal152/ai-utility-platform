@@ -96,6 +96,20 @@ const sendOTPEmail = async (email, otp, type = 'verify') => {
 const registerUser = async (req, res) => {
     const { name, email, password, phone } = req.body;
 
+    // ── Validation ────────────────────────────────────────────
+    if (!name || !email || !password) {
+        return res.status(400).json({ message: 'Name, email, and password are required.' });
+    }
+
+    if (phone) {
+        // Accepts: +254712345678, 0712345678, 07 1234 5678 (strips spaces)
+        const cleaned = phone.replace(/\s+/g, '');
+        const phoneRegex = /^(\+?\d{7,15})$/;
+        if (!phoneRegex.test(cleaned)) {
+            return res.status(400).json({ message: 'Invalid phone number. Use format: +254712345678 or 0712345678.' });
+        }
+    }
+
     try {
         // Check if user exists
         const userExists = await db.query(
@@ -121,7 +135,7 @@ const registerUser = async (req, res) => {
             (name, email, password_hash, phone, otp_code, otp_expires, email_verified) 
             VALUES ($1, $2, $3, $4, $5, $6, $7) 
             RETURNING id, email`,
-            [name, email, hashedPassword, phone, otp, otpExpires, false]
+            [name, email, hashedPassword, phone || null, otp, otpExpires, false]
         );
 
         // Debug logs (VERY IMPORTANT)

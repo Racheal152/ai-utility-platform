@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
+import { User, Mail, Lock, Phone, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
 import API from '../services/api';
 
 const Register = () => {
@@ -17,6 +17,17 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
+
+    // ── Client-side phone validation ──────────────────────────
+    if (phone) {
+      const cleaned = phone.replace(/\s+/g, '');
+      const phoneRegex = /^(\+?\d{7,15})$/;
+      if (!phoneRegex.test(cleaned)) {
+        setError('Invalid phone number. Use format: +254712345678 or 0712345678');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       const res = await API.post('/auth/register', { name, email, password, phone });
@@ -102,16 +113,18 @@ const Register = () => {
 
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Sparkles className="h-5 w-5 text-slate-400 group-focus-within:text-violet-500 transition-colors" />
+              <Phone className="h-5 w-5 text-slate-400 group-focus-within:text-violet-500 transition-colors" />
             </div>
             <input
-              type="tel" required
+              type="tel"
               className="block w-full pl-12 pr-4 py-4 bg-white/70 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:scale-[1.01] transition-all font-medium"
-              placeholder="Phone Number"
+              placeholder="Phone Number (e.g. +254712345678)"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
+            <p className="text-xs text-slate-400 mt-1 pl-2">Optional — format: +254712345678 or 0712345678</p>
           </div>
+
 
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">

@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 const API = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+    // In dev: Vite proxy forwards /api → localhost:5000
+    // In prod: set VITE_API_BASE_URL to your backend URL, e.g. https://your-api.render.com/api
+    baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
 });
 
 API.interceptors.request.use((config) => {
@@ -87,7 +89,7 @@ export const getExportUrl = (type, householdId, startDate, endDate, format) => {
         endDate: endDate || '',
         token 
     });
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
     return `${baseUrl}/reports/export/${format}?${params.toString()}`;
 };
 

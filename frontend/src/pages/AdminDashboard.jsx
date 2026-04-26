@@ -325,8 +325,26 @@ const AdminDashboard = () => {
                    <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
                      <TrendingUp size={20} className="text-violet-500" /> Platform Usage Analytics
                    </h2>
-                   <div className="h-64 flex items-center justify-center text-slate-400 border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50/50">
-                      Chart visualization would go here (Users vs Bills vs Proofs)
+                   <div className="h-64 w-full">
+                     {stats?.billTrend && stats.billTrend.length > 0 ? (
+                       <ResponsiveContainer width="100%" height="100%">
+                         <BarChart data={stats.billTrend}>
+                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                           <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                           <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                           <Tooltip 
+                             contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                             cursor={{ fill: '#f8fafc' }}
+                           />
+                           <Bar dataKey="value" fill="#8b5cf6" radius={[4, 4, 0, 0]} barSize={30} />
+                         </BarChart>
+                       </ResponsiveContainer>
+                     ) : (
+                       <div className="h-full flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50/50">
+                         <Activity size={32} className="mb-2 opacity-20" />
+                         <p className="text-sm font-medium">No activity data in the last 7 days</p>
+                       </div>
+                     )}
                    </div>
                 </div>
                 <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">

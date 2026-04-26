@@ -152,6 +152,14 @@ const getSystemStats = async (req, res) => {
         const rejectedCount = await db.query("SELECT COUNT(*) FROM PaymentProofs WHERE status = 'rejected'");
         const revenueTotal = await db.query("SELECT SUM(amount) FROM Bills WHERE status = 'paid'");
 
+        const billTrend = await db.query(`
+            SELECT TO_CHAR(created_at, 'DD Mon') as label, COUNT(*) as value 
+            FROM Bills 
+            WHERE created_at > CURRENT_DATE - INTERVAL '7 days'
+            GROUP BY label 
+            ORDER BY MIN(created_at)
+        `);
+
         res.json({
             totalUsers: parseInt(usersCount.rows[0].count),
             totalHouseholds: parseInt(householdsCount.rows[0].count),
@@ -160,6 +168,7 @@ const getSystemStats = async (req, res) => {
             verifiedProofs: parseInt(verifiedCount.rows[0].count),
             rejectedProofs: parseInt(rejectedCount.rows[0].count),
             totalRevenue: parseFloat(revenueTotal.rows[0].sum || 0),
+            billTrend: billTrend.rows,
             verificationRate: proofsCount.rows[0].count > 0 
                 ? (parseInt(verifiedCount.rows[0].count) / parseInt(proofsCount.rows[0].count) * 100).toFixed(1) 
                 : 0

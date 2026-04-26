@@ -58,6 +58,13 @@ const getBills = async (req, res) => {
     const { householdId } = req.params;
     const userId = req.user.id;
     try {
+        // 1. Get user's role in this household
+        const roleRes = await db.query(
+            'SELECT role FROM HouseholdMembers WHERE user_id = $1 AND household_id = $2',
+            [userId, householdId]
+        );
+        const userRole = roleRes.rows[0]?.role;
+
         const result = await db.query(`
             SELECT
                 b.id, b.utility_type, b.amount, b.due_date, b.period, b.status, b.created_at, b.consumption, b.units,
@@ -91,8 +98,18 @@ const getBills = async (req, res) => {
         // Map over result to easily surface the current user's specific share at the root level for easy UI handling
         const enrichedBills = result.rows.map(bill => {
             const userShareObj = (bill.shares || []).find(s => s.user_id === userId);
+            
+            // Privacy filter: If not owner, strip proof_image from other users' shares
+            const filteredShares = (bill.shares || []).map(s => {
+                if (userRole === 'owner' || s.user_id === userId) return s;
+                // Strip sensitive data for peers
+                const { proof_image, ocr_data, ...rest } = s;
+                return rest;
+            });
+
             return {
                 ...bill,
+                shares: filteredShares,
                 user_share: userShareObj ? userShareObj.amount : 0,
                 is_participant: !!userShareObj,
                 share_status: userShareObj ? userShareObj.share_status : 'unpaid',

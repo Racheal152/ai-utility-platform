@@ -7,7 +7,8 @@ import {
 import { Link } from 'react-router-dom';
 import {
   ensureHousehold, fetchBills, addBill, updateBillStatus,
-  deleteBill, uploadProof, approveProof, rejectProof, fetchUserProfile
+  deleteBill, uploadProof, approveProof, rejectProof, fetchUserProfile,
+  IMAGE_BASE_URL
 } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
 import MobileNav from '../components/MobileNav';
@@ -281,7 +282,7 @@ const DetailsSidePanel = ({ bill, user, onClose, onApproved }) => {
                     )}
                     {share.proof_image && (
                       <div className="rounded-lg border border-slate-200 overflow-hidden bg-white">
-                        <img src={`http://localhost:5000/${share.proof_image}`} alt="Proof" className="w-full object-contain max-h-48" />
+                        <img src={`${IMAGE_BASE_URL}/${share.proof_image}`} alt="Proof" className="w-full object-contain max-h-48" />
                       </div>
                     )}
                     {share.ocr_data && share.ocr_data.extractedAmount && (

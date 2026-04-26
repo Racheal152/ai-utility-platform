@@ -1,10 +1,13 @@
 import axios from 'axios';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 const API = axios.create({
-    // In dev: Vite proxy forwards /api → localhost:5000
-    // In prod: set VITE_API_BASE_URL to your backend URL, e.g. https://your-api.render.com/api
-    baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+    baseURL: API_BASE,
 });
+
+// For image URLs (e.g. proof images stored on server)
+// Removes '/api' from the end of the base URL to get the root server URL
+export const IMAGE_BASE_URL = API_BASE.endsWith('/api') ? API_BASE.slice(0, -4) : API_BASE;
 
 API.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');

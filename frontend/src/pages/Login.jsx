@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, Sparkles, AlertCircle, ShieldX, Ban, AlertTriangle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, AlertCircle, ShieldX, Ban, AlertTriangle } from 'lucide-react';
 import API from '../services/api';
 
 const Login = () => {
@@ -9,6 +9,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [accountStatus, setAccountStatus] = useState(null); // 'suspended' | 'deleted' | 'restricted' | null
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -136,13 +137,20 @@ const Login = () => {
               <Lock className="h-5 w-5 text-slate-400 group-focus-within:text-violet-500 transition-colors" />
             </div>
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               required
-              className="block w-full pl-12 pr-4 py-4 bg-white/70 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:scale-[1.01] transition-all font-medium"
+              className="block w-full pl-12 pr-12 py-4 bg-white/70 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:scale-[1.01] transition-all font-medium"
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(v => !v)}
+              className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-violet-500 transition-colors"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
 
           <div className="flex justify-end">

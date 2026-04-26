@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Phone, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
+import { User, Mail, Lock, Phone, Eye, EyeOff, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
 import API from '../services/api';
 
 const Register = () => {
@@ -8,6 +8,9 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -26,6 +29,16 @@ const Register = () => {
         setError('Invalid phone number. Use format: +254712345678 or 0712345678');
         return;
       }
+    }
+
+    // ── Confirm password ──────────────────────────────────────
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
     }
 
     setLoading(true);
@@ -126,17 +139,47 @@ const Register = () => {
           </div>
 
 
+          {/* Password */}
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <Lock className="h-5 w-5 text-slate-400 group-focus-within:text-violet-500 transition-colors" />
             </div>
             <input
-              type="password" required minLength={6}
-              className="block w-full pl-12 pr-4 py-4 bg-white/70 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:scale-[1.01] transition-all font-medium"
+              type={showPassword ? 'text' : 'password'} required minLength={6}
+              className="block w-full pl-12 pr-12 py-4 bg-white/70 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:scale-[1.01] transition-all font-medium"
               placeholder="Create a strong password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            <button type="button" onClick={() => setShowPassword(v => !v)}
+              className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-violet-500 transition-colors">
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+
+          {/* Confirm Password */}
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Lock className="h-5 w-5 text-slate-400 group-focus-within:text-violet-500 transition-colors" />
+            </div>
+            <input
+              type={showConfirm ? 'text' : 'password'} required
+              className={`block w-full pl-12 pr-12 py-4 bg-white/70 border rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:scale-[1.01] transition-all font-medium ${
+                confirmPassword && confirmPassword !== password
+                  ? 'border-red-400 focus:border-red-400'
+                  : 'border-slate-200 focus:border-violet-500'
+              }`}
+              placeholder="Confirm your password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            <button type="button" onClick={() => setShowConfirm(v => !v)}
+              className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-violet-500 transition-colors">
+              {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+            {confirmPassword && confirmPassword !== password && (
+              <p className="text-xs text-red-500 mt-1 pl-2">Passwords do not match</p>
+            )}
           </div>
 
           <button

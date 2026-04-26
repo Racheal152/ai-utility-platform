@@ -24,9 +24,10 @@ const Register = () => {
     // ── Client-side phone validation ──────────────────────────
     if (phone) {
       const cleaned = phone.replace(/\s+/g, '');
-      const phoneRegex = /^(\+?\d{7,15})$/;
+      // Allow: 0712345678 (10 digits) or +254712345678 (13 chars)
+      const phoneRegex = /^(0\d{9}|\+254\d{9})$/;
       if (!phoneRegex.test(cleaned)) {
-        setError('Invalid phone number. Use format: +254712345678 or 0712345678');
+        setError('Phone must be 10 digits (e.g. 0712345678) or international format (+254712345678)');
         return;
       }
     }
@@ -135,7 +136,7 @@ const Register = () => {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
-            <p className="text-xs text-slate-400 mt-1 pl-2">Optional — format: +254712345678 or 0712345678</p>
+            <p className="text-xs text-slate-400 mt-1 pl-2">Optional — 10 digits e.g. 0712345678 or +254712345678</p>
           </div>
 
 

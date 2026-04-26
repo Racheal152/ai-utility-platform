@@ -102,11 +102,11 @@ const registerUser = async (req, res) => {
     }
 
     if (phone) {
-        // Accepts: +254712345678, 0712345678, 07 1234 5678 (strips spaces)
+        // Allow: 0712345678 (10 digits) or +254712345678 (13 chars)
         const cleaned = phone.replace(/\s+/g, '');
-        const phoneRegex = /^(\+?\d{7,15})$/;
+        const phoneRegex = /^(0\d{9}|\+254\d{9})$/;
         if (!phoneRegex.test(cleaned)) {
-            return res.status(400).json({ message: 'Invalid phone number. Use format: +254712345678 or 0712345678.' });
+            return res.status(400).json({ message: 'Phone must be 10 digits (e.g. 0712345678) or international format (+254712345678).' });
         }
     }
 

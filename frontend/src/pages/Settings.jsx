@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, FileText, Users, Settings as SettingsIcon, LogOut, Sparkles, Save, Loader2, AlertCircle, CheckCircle, ShieldCheck, TrendingUp } from 'lucide-react';
+import { Home, FileText, Users, Settings as SettingsIcon, LogOut, Sparkles, Save, Loader2, AlertCircle, CheckCircle, ShieldCheck, TrendingUp, Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { updateProfile, fetchUserProfile } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
@@ -14,6 +14,7 @@ const Settings = () => {
   const [name, setName] = useState(user.name || '');
   const [phone, setPhone] = useState(user.phone || '');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
 
@@ -41,8 +42,23 @@ const Settings = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSaving(true);
     setMsg({ type: '', text: '' });
+
+    // ── Client-side validation ────────────────────────────────
+    if (phone) {
+      const cleaned = phone.replace(/\s+/g, '');
+      const phoneRegex = /^(0\d{9}|\+254\d{9})$/;
+      if (!phoneRegex.test(cleaned)) {
+        setMsg({ type: 'error', text: 'Phone must be 10 digits (e.g. 0712345678) or +254XXXXXXXXX' });
+        return;
+      }
+    }
+    if (password && password.length < 6) {
+      setMsg({ type: 'error', text: 'Password must be at least 6 characters.' });
+      return;
+    }
+
+    setSaving(true);
     try {
       const payload = { name, phone };
       if (password) payload.password = password;
@@ -178,15 +194,24 @@ const Settings = () => {
                 />
               </div>
 
-              <div>
+              <div className="relative">
                 <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">New Password (Optional)</label>
-                <input 
-                  type="password" 
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="Leave blank to keep current password"
-                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:bg-white focus:scale-[1.01] transition-all" 
-                />
+                <div className="relative group">
+                  <input 
+                    type={showPassword ? 'text' : 'password'} 
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="Leave blank to keep current password"
+                    className="w-full border border-slate-200 rounded-xl px-4 py-3 pr-12 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:bg-white focus:scale-[1.01] transition-all" 
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-violet-500 transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
               <div className="pt-4 border-t border-slate-100 flex justify-end">

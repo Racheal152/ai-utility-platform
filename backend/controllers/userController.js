@@ -9,6 +9,9 @@ const updateProfile = async (req, res) => {
         let paramIndex = 2;
 
         if (password) {
+            if (password.length < 6) {
+                return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+            }
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password, salt);
             query += `, password_hash = $${paramIndex}`;
@@ -17,8 +20,13 @@ const updateProfile = async (req, res) => {
         }
 
         if (phone) {
+            const cleaned = phone.replace(/\s+/g, '');
+            const phoneRegex = /^(0\d{9}|\+254\d{9})$/;
+            if (!phoneRegex.test(cleaned)) {
+                return res.status(400).json({ message: 'Phone must be 10 digits (e.g. 0712345678) or international format (+254712345678).' });
+            }
             query += `, phone = $${paramIndex}`;
-            values.push(phone);
+            values.push(cleaned);
             paramIndex++;
         }
 

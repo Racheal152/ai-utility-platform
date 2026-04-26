@@ -7,7 +7,7 @@ import {
 import { Link } from 'react-router-dom';
 import {
   ensureHousehold, fetchBills, addBill, updateBillStatus,
-  deleteBill, uploadProof, approveProof, rejectProof
+  deleteBill, uploadProof, approveProof, rejectProof, fetchUserProfile
 } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
 import MobileNav from '../components/MobileNav';
@@ -354,7 +354,6 @@ const BillTracking = () => {
       }
       setBills(fetchedBills);
       try {
-        const { fetchUserProfile } = await import('../services/api');
         const uRes = await fetchUserProfile();
         setUser(uRes.data);
         localStorage.setItem('user', JSON.stringify(uRes.data));

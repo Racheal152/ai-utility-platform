@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Home, FileText, Users, Settings as SettingsIcon, LogOut, Sparkles, Save, Loader2, AlertCircle, CheckCircle, ShieldCheck, TrendingUp } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { updateProfile } from '../services/api';
+import { updateProfile, fetchUserProfile } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
 import MobileNav from '../components/MobileNav';
 
@@ -20,7 +20,6 @@ const Settings = () => {
   React.useEffect(() => {
     const getLatestProfile = async () => {
       try {
-        const { fetchUserProfile } = await import('../services/api');
         const res = await fetchUserProfile();
         const userData = res.data;
         setUser(userData);

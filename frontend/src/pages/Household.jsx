@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Home, FileText, Users, Settings, LogOut, Sparkles, UserPlus, Copy, CheckCircle, Loader2, AlertCircle, TrendingUp } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ensureHousehold, fetchMembers, generateInvite, removeMember, transferOwnership, updateHousehold } from '../services/api';
+import { ensureHousehold, fetchMembers, generateInvite, removeMember, transferOwnership, updateHousehold, fetchUserProfile } from '../services/api';
 import { UserMinus, ShieldCheck, Pencil, Save, X as CloseIcon } from 'lucide-react';
 import NotificationBell from '../components/NotificationBell';
 import MobileNav from '../components/MobileNav';
@@ -32,7 +32,6 @@ const Household = () => {
         setHousehold(h);
         setNewName(h.name);
 
-        const { fetchUserProfile } = await import('../services/api');
         const uRes = await fetchUserProfile();
         setUser(uRes.data);
         localStorage.setItem('user', JSON.stringify(uRes.data));

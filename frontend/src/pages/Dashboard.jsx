@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
-import { ensureHousehold, fetchBills, addBill, fetchPredictions, fetchMembers, fetchAiInsights } from '../services/api';
+import { ensureHousehold, fetchBills, addBill, fetchPredictions, fetchMembers, fetchAiInsights, fetchUserProfile } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
 import MobileNav from '../components/MobileNav';
 import AddBillModal from '../components/AddBillModal';
@@ -64,7 +64,6 @@ const Dashboard = () => {
         console.error('Failed to load predictions', e);
       }
       try {
-        const { fetchUserProfile } = await import('../services/api');
         const uRes = await fetchUserProfile();
         setUser(uRes.data);
         localStorage.setItem('user', JSON.stringify(uRes.data));

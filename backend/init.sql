@@ -35,11 +35,15 @@ CREATE TABLE IF NOT EXISTS HouseholdMembers (
 CREATE TABLE IF NOT EXISTS Bills (
     id SERIAL PRIMARY KEY,
     household_id INT REFERENCES Households(id) ON DELETE CASCADE,
-    utility_type VARCHAR(50) NOT NULL, -- electricity, water, internet, rent
+    utility_type VARCHAR(50) NOT NULL,
     amount DECIMAL(10, 2) NOT NULL,
     due_date DATE NOT NULL,
     period VARCHAR(50), -- e.g., 'March 2026'
     status VARCHAR(50) DEFAULT 'pending', -- pending, partially_paid, paid
+    consumption DECIMAL(10, 2),
+    units VARCHAR(50),
+    usage_value DECIMAL(10, 2),
+    usage_unit VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -79,9 +79,10 @@ app.get('/api/run-migrations', async (req, res) => {
 
     // Bills
     await run('ALTER TABLE Bills ADD COLUMN IF NOT EXISTS consumption DECIMAL(10,2)', 'Bills.consumption');
-    await run('ALTER TABLE Bills ADD COLUMN IF NOT EXISTS consumption_unit VARCHAR(50)', 'Bills.consumption_unit');
+    await run('ALTER TABLE Bills ADD COLUMN IF NOT EXISTS units VARCHAR(50)', 'Bills.units');
     await run('ALTER TABLE Bills ADD COLUMN IF NOT EXISTS usage_value DECIMAL(10,2)', 'Bills.usage_value');
     await run('ALTER TABLE Bills ADD COLUMN IF NOT EXISTS usage_unit VARCHAR(50)', 'Bills.usage_unit');
+
 
     // ActivityLogs
     await run(`CREATE TABLE IF NOT EXISTS ActivityLogs (

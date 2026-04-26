@@ -12,6 +12,7 @@ import {
   fetchAdminProofs, approveProof, rejectProof, exportAdminData
 } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
+import MobileNav from '../components/MobileNav';
 
 const fmtKES = (n) => `KES ${Number(n || 0).toLocaleString('en-KE', { minimumFractionDigits: 0 })}`;
 const fmtDate = (d) => new Date(d).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -265,15 +266,43 @@ const AdminDashboard = () => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="h-16 flex items-center justify-between px-8 bg-white border-b border-slate-200">
-          <h1 className="text-xl font-bold text-slate-800 capitalize">{activeTab.replace('-', ' ')}</h1>
+        <header className="h-16 flex items-center justify-between px-4 md:px-8 bg-white border-b border-slate-200 sticky top-0 z-20">
+          <div className="flex items-center gap-2 md:hidden text-violet-600 mr-2">
+            <ShieldCheck size={24} className="fill-violet-100" />
+          </div>
+          <h1 className="text-lg md:text-xl font-bold text-slate-800 capitalize truncate">{activeTab.replace('-', ' ')}</h1>
           <div className="flex items-center gap-4">
              <NotificationBell />
-             <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
+             <div className="w-10 h-10 rounded-full bg-slate-100 hidden md:flex items-center justify-center border border-slate-200">
                 <ShieldCheck size={20} className="text-violet-600" />
              </div>
           </div>
         </header>
+
+        {/* Mobile Tab Selector */}
+        <div className="md:hidden bg-white border-b border-slate-100 overflow-x-auto no-scrollbar flex items-center gap-2 px-4 py-3 sticky top-16 z-20 shadow-sm">
+          {[
+            { id: 'overview', label: 'Overview' },
+            { id: 'users', label: 'Users' },
+            { id: 'households', label: 'Households' },
+            { id: 'bills', label: 'Bills' },
+            { id: 'proofs', label: 'Proofs' },
+            { id: 'analytics', label: 'Analytics' },
+            { id: 'logs', label: 'Logs' },
+          ].map(item => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+                activeTab === item.id 
+                ? 'bg-violet-600 text-white shadow-md shadow-violet-200' 
+                : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
 
         <div className="flex-1 overflow-y-auto p-8">
           {error && (
@@ -686,6 +715,7 @@ const AdminDashboard = () => {
         </div>
       )}
 
+      <MobileNav />
     </div>
   );
 };

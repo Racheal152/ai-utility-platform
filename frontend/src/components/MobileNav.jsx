@@ -1,10 +1,12 @@
 import React from 'react';
-import { Home, FileText, Users, Settings, LogOut, TrendingUp } from 'lucide-react';
+import { Home, FileText, Users, Settings, LogOut, TrendingUp, ShieldCheck } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const MobileNav = () => {
   const location = useLocation();
   const path = location.pathname;
+
+  const user = (() => { try { return JSON.parse(localStorage.getItem('user')) || {}; } catch { return {}; } })();
 
   const links = [
     { to: '/dashboard', icon: <Home size={20} />, label: 'Home' },
@@ -13,6 +15,10 @@ const MobileNav = () => {
     { to: '/household', icon: <Users size={20} />, label: 'Household' },
     { to: '/settings', icon: <Settings size={20} />, label: 'Settings' }
   ];
+
+  if (user.role === 'admin') {
+    links.push({ to: '/admin', icon: <ShieldCheck size={20} />, label: 'Admin' });
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-[0_-4px_15px_rgba(0,0,0,0.02)] md:hidden z-50 h-16 flex items-center justify-around px-2 pb-safe">

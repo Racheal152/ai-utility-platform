@@ -10,6 +10,7 @@ import {
 const Landing = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showDemo, setShowDemo] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -104,8 +105,11 @@ const Landing = () => {
               <Link to="/register" className="w-full sm:w-auto px-8 py-4 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-2xl shadow-xl shadow-violet-200 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2 group">
                 Start Free Trial <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </Link>
-              <button className="w-full sm:w-auto px-8 py-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-2xl hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
-                <Play size={18} className="fill-slate-700" /> Watch Demo
+              <button 
+                onClick={() => setShowDemo(true)}
+                className="w-full sm:w-auto px-8 py-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-2xl hover:bg-slate-50 transition-all flex items-center justify-center gap-2 group"
+              >
+                <Play size={18} className="fill-slate-700 group-hover:scale-110 transition-transform" /> Watch Demo
               </button>
             </div>
             <div className="pt-4 flex items-center justify-center lg:justify-start gap-6 text-slate-400">
@@ -294,6 +298,26 @@ const Landing = () => {
            <p>© 2026 AivaPay AI Inc. All rights reserved.</p>
         </div>
       </footer>
+
+      {/* Video Modal */}
+      {showDemo && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-300">
+           <div className="relative w-full max-w-5xl aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10 scale-in-center">
+              <button 
+                onClick={() => setShowDemo(false)}
+                className="absolute top-4 right-4 z-10 p-2 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors backdrop-blur-md"
+              >
+                <X size={24} />
+              </button>
+              <video 
+                className="w-full h-full"
+                src="/demo.mp4" 
+                controls
+                autoPlay
+              />
+           </div>
+        </div>
+      )}
 
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes float {

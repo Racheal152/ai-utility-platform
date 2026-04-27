@@ -8,7 +8,8 @@ import { Link } from 'react-router-dom';
 import {
   ensureHousehold, fetchBills, addBill, updateBillStatus,
   deleteBill, uploadProof, approveProof, rejectProof, fetchUserProfile,
-  IMAGE_BASE_URL
+  IMAGE_BASE_URL,
+  getFullUrl
 } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
 import MobileNav from '../components/MobileNav';
@@ -281,8 +282,24 @@ const DetailsSidePanel = ({ bill, user, onClose, onApproved }) => {
                       </div>
                     )}
                     {share.proof_image && (
-                      <div className="rounded-lg border border-slate-200 overflow-hidden bg-white">
-                        <img src={`${IMAGE_BASE_URL}/${share.proof_image}`} alt="Proof" className="w-full object-contain max-h-48" />
+                      <div className="rounded-lg border border-slate-200 overflow-hidden bg-white mt-3">
+                        {share.proof_image.toLowerCase().endsWith('.pdf') ? (
+                          <iframe 
+                            src={getFullUrl(share.proof_image)} 
+                            className="w-full h-64 rounded-lg" 
+                            title="PDF Proof" 
+                          />
+                        ) : (
+                          <img 
+                            src={getFullUrl(share.proof_image)} 
+                            alt="Proof" 
+                            className="w-full object-contain max-h-64" 
+                            onError={(e) => {
+                              console.error("Image load failed:", e.target.src);
+                              e.target.src = 'https://via.placeholder.com/600x400?text=Proof+Image+Not+Found';
+                            }}
+                          />
+                        )}
                       </div>
                     )}
                     {share.ocr_data && share.ocr_data.extractedAmount && (

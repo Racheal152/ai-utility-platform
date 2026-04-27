@@ -42,6 +42,16 @@ app.get('/api/db-test', async (req, res) => {
     }
 });
 
+// Debug: List files in uploads
+app.get('/api/debug-uploads', (req, res) => {
+    try {
+        const files = fs.readdirSync(path.join(__dirname, 'uploads'));
+        res.json({ count: files.length, files });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // ─── 5. DB Setup ─────────────────────────────────────────────
 app.get('/api/setup-db', async (req, res) => {
     try {

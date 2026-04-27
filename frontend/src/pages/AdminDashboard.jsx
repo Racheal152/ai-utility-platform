@@ -9,7 +9,7 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContai
 import { 
   fetchAdminStats, fetchAdminLogs, fetchAdminUsers, updateAdminUser, 
   deleteAdminUser, fetchAdminHouseholds, updateAdminHousehold, fetchAdminBills, 
-  fetchAdminProofs, approveProof, rejectProof, exportAdminData
+  fetchAdminProofs, approveProof, rejectProof, exportAdminData, getFullUrl
 } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
 import MobileNav from '../components/MobileNav';
@@ -33,12 +33,6 @@ const AdminDashboard = () => {
   const [expandedHouseholdId, setExpandedHouseholdId] = useState(null);
   const [viewProofUrl, setViewProofUrl] = useState(null);
 
-  const getFullUrl = (url) => {
-    if (!url) return '';
-    if (url.startsWith('http')) return url;
-    const baseUrl = import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace('/api', '') : 'http://localhost:5000';
-    return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
-  };
 
   // Close dropdown when clicking outside
   useEffect(() => {

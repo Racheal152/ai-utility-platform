@@ -6,8 +6,15 @@ const API = axios.create({
 });
 
 // For image URLs (e.g. proof images stored on server)
-// Removes '/api' from the end of the base URL to get the root server URL
-export const IMAGE_BASE_URL = API_BASE.endsWith('/api') ? API_BASE.slice(0, -4) : API_BASE;
+export const IMAGE_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/api$/, '').replace(/\/$/, '');
+
+export const getFullUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    const base = IMAGE_BASE_URL || (window.location.origin);
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `${base}${cleanPath}`;
+};
 
 API.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');

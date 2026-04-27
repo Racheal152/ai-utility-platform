@@ -283,8 +283,15 @@ const Landing = () => {
           <div className="flex flex-col gap-4">
             <h3 className="text-slate-900 font-bold uppercase tracking-wider text-xs">Company</h3>
             <Link to="/about" className="hover:text-violet-600 transition-colors">About Us</Link>
-            <a href="#" className="hover:text-violet-600 transition-colors">Contact</a>
-            <a href="#" className="hover:text-violet-600 transition-colors">Careers</a>
+            <div className="space-y-1">
+              <p className="text-slate-900 font-bold text-[10px] uppercase opacity-40">Contact Us</p>
+              <a href="mailto:kacheracheal152@gmail.com" className="block hover:text-violet-600 transition-colors">kacheracheal152@gmail.com</a>
+              <a href="tel:0705214157" className="block hover:text-violet-600 transition-colors">0705214157</a>
+            </div>
+            <div className="space-y-1">
+              <p className="text-slate-900 font-bold text-[10px] uppercase opacity-40">Careers</p>
+              <span className="text-slate-400 italic">No opportunities for now</span>
+            </div>
           </div>
 
           <div className="flex flex-col gap-4">

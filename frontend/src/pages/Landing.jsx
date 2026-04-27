@@ -284,7 +284,7 @@ const Landing = () => {
             <h3 className="text-slate-900 font-bold uppercase tracking-wider text-xs">Company</h3>
             <Link to="/about" className="hover:text-violet-600 transition-colors">About Us</Link>
             <Link to="/contact" className="hover:text-violet-600 transition-colors">Contact Us</Link>
-            <Link to="/contact" className="hover:text-violet-600 transition-colors">Careers</Link>
+            <Link to="/careers" className="hover:text-violet-600 transition-colors">Careers</Link>
           </div>
 
           <div className="flex flex-col gap-4">

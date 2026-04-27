@@ -15,6 +15,7 @@ import AboutUs from './pages/AboutUs';
 import Terms from './pages/Terms';
 import UserGuide from './pages/UserGuide';
 import Contact from './pages/Contact';
+import Careers from './pages/Careers';
 
 // Protects routes — redirects to login if no token
 const PrivateRoute = ({ children }) => {
@@ -43,6 +44,7 @@ function App() {
           <Route path="/terms" element={<Terms />} />
           <Route path="/guide" element={<UserGuide />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/careers" element={<Careers />} />
 
           <Route path="/dashboard" element={
             <PrivateRoute><Dashboard /></PrivateRoute>

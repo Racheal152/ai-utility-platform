@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowLeft, Mail, Phone, MapPin, Briefcase } from 'lucide-react';
+import { Sparkles, ArrowLeft, Mail, Phone, MapPin } from 'lucide-react';
 
 const Contact = () => {
   return (
@@ -23,59 +23,37 @@ const Contact = () => {
 
       <section className="pt-32 pb-20 max-w-4xl mx-auto px-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">Contact & Careers</h1>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">Contact Us</h1>
           <p className="text-slate-500 mb-12">We'd love to hear from you. Whether you have a question about features, trials, pricing, or anything else, our team is ready to answer all your questions.</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div className="space-y-8">
-              <h2 className="text-xl font-bold text-slate-900">Get in Touch</h2>
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-violet-50 text-violet-600 rounded-xl">
-                    <Mail size={24} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-1 text-[10px]">Email Us</p>
-                    <a href="mailto:kacheracheal152@gmail.com" className="text-slate-600 hover:text-violet-600 transition-colors text-lg font-medium">
-                      kacheracheal152@gmail.com
-                    </a>
-                  </div>
+          <div className="space-y-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="p-8 rounded-[2rem] border border-slate-100 bg-slate-50/50 flex flex-col items-center text-center group hover:border-violet-200 transition-all">
+                <div className="p-4 bg-white rounded-2xl shadow-sm mb-6 text-violet-600 group-hover:scale-110 transition-transform">
+                  <Mail size={32} />
                 </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-violet-50 text-violet-600 rounded-xl">
-                    <Phone size={24} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-1 text-[10px]">Call Us</p>
-                    <a href="tel:0705214157" className="text-slate-600 hover:text-violet-600 transition-colors text-lg font-medium">
-                      0705214157
-                    </a>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-violet-50 text-violet-600 rounded-xl">
-                    <MapPin size={24} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-1 text-[10px]">Office</p>
-                    <p className="text-slate-600 text-lg font-medium">Nairobi, Kenya</p>
-                  </div>
-                </div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Email Us</p>
+                <a href="mailto:kacheracheal152@gmail.com" className="text-slate-800 hover:text-violet-600 transition-colors font-bold truncate w-full">
+                  kacheracheal152@gmail.com
+                </a>
               </div>
-            </div>
 
-            <div className="space-y-8">
-              <h2 className="text-xl font-bold text-slate-900">Careers</h2>
-              <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 flex flex-col items-center text-center">
-                 <div className="p-4 bg-white rounded-2xl shadow-sm mb-6">
-                   <Briefcase size={32} className="text-slate-400" />
-                 </div>
-                 <h3 className="text-lg font-bold text-slate-800 mb-2">No opportunities for now</h3>
-                 <p className="text-sm text-slate-500 leading-relaxed">
-                   We're not currently hiring, but we're always looking for talented people to join our community. Check back later!
-                 </p>
+              <div className="p-8 rounded-[2rem] border border-slate-100 bg-slate-50/50 flex flex-col items-center text-center group hover:border-violet-200 transition-all">
+                <div className="p-4 bg-white rounded-2xl shadow-sm mb-6 text-violet-600 group-hover:scale-110 transition-transform">
+                  <Phone size={32} />
+                </div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Call Us</p>
+                <a href="tel:0705214157" className="text-slate-800 hover:text-violet-600 transition-colors font-bold text-lg">
+                  0705214157
+                </a>
+              </div>
+
+              <div className="p-8 rounded-[2rem] border border-slate-100 bg-slate-50/50 flex flex-col items-center text-center group hover:border-violet-200 transition-all">
+                <div className="p-4 bg-white rounded-2xl shadow-sm mb-6 text-violet-600 group-hover:scale-110 transition-transform">
+                  <MapPin size={32} />
+                </div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Location</p>
+                <p className="text-slate-800 font-bold text-lg">Nairobi, Kenya</p>
               </div>
             </div>
           </div>

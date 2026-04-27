@@ -14,6 +14,7 @@ import Landing from './pages/Landing';
 import AboutUs from './pages/AboutUs';
 import Terms from './pages/Terms';
 import UserGuide from './pages/UserGuide';
+import Contact from './pages/Contact';
 
 // Protects routes — redirects to login if no token
 const PrivateRoute = ({ children }) => {
@@ -41,6 +42,7 @@ function App() {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/guide" element={<UserGuide />} />
+          <Route path="/contact" element={<Contact />} />
 
           <Route path="/dashboard" element={
             <PrivateRoute><Dashboard /></PrivateRoute>
